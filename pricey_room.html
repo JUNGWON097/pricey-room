@@ -9,49 +9,41 @@
 <meta name="theme-color" content="#1a3a2a">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="apple-touch-icon" href="icon.svg">
-<title>갇힘일지 🔐</title>
+<title>갇힘일지 👻</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;background:#f7f5f0;color:#1a1a1a;min-height:100vh;padding-bottom:70px;}
 
-/* 헤더 */
 .header{background:#fff;border-bottom:1px solid #e8e4dc;padding:1.1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
 .header-left h1{font-size:1.05rem;font-weight:600;letter-spacing:-0.02em;}
 .header-left p{font-size:0.72rem;color:#999;margin-top:2px;}
 .add-btn{background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:0.45rem 0.9rem;font-size:0.82rem;cursor:pointer;font-family:inherit;}
-.add-btn:hover{opacity:0.8;}
 
-/* 하단 탭 */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e8e4dc;display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom,0);}
-.nav-btn{flex:1;padding:0.6rem 0;border:none;background:none;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;color:#bbb;transition:color 0.15s;}
+.nav-btn{flex:1;padding:0.6rem 0;border:none;background:none;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;color:#bbb;}
 .nav-btn.active{color:#1a1a1a;}
 .nav-icon{font-size:1.2rem;}
 .nav-label{font-size:0.65rem;font-weight:500;}
 
-/* 탭 패널 */
 .tab-panel{display:none;}
 .tab-panel.active{display:block;}
 
-/* 검색 */
 .search-wrap{padding:0.75rem 1.25rem 0.5rem;position:relative;}
 .search-input{width:100%;border:1px solid #e0ddd6;border-radius:10px;padding:0.5rem 0.85rem 0.5rem 2.2rem;font-size:0.85rem;font-family:inherit;outline:none;background:#fff;}
 .search-input:focus{border-color:#1a1a1a;}
-.search-icon{position:absolute;left:2rem;top:50%;transform:translateY(-50%);color:#bbb;font-size:0.9rem;pointer-events:none;}
+.search-icon{position:absolute;left:2rem;top:50%;transform:translateY(-50%);color:#bbb;pointer-events:none;}
 
-/* 필터/컨트롤 */
 .controls-bar{padding:0 1.25rem 0.75rem;display:flex;align-items:center;gap:6px;}
 .filter-bar{display:flex;gap:6px;flex-wrap:wrap;flex:1;}
 .filter-btn{background:#fff;border:1px solid #e0ddd6;border-radius:20px;padding:0.28rem 0.72rem;font-size:0.73rem;cursor:pointer;font-family:inherit;color:#555;}
 .filter-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
 .sort-select{border:1px solid #e0ddd6;border-radius:8px;padding:0.28rem 0.55rem;font-size:0.73rem;font-family:inherit;color:#555;background:#fff;cursor:pointer;outline:none;flex-shrink:0;}
 
-/* 통계 */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:1rem 1.25rem 0.5rem;}
 .stat-card{background:#fff;border-radius:10px;padding:0.75rem;text-align:center;border:1px solid #e8e4dc;}
 .stat-num{font-size:1.3rem;font-weight:700;}
 .stat-label{font-size:0.68rem;color:#999;margin-top:2px;}
 
-/* 기록 카드 */
 .records{padding:0 1.25rem 1rem;display:flex;flex-direction:column;gap:9px;}
 .record-card{background:#fff;border-radius:12px;border:1px solid #e8e4dc;overflow:hidden;}
 .record-card-header{padding:0.9rem 1rem 0.55rem;cursor:pointer;}
@@ -80,6 +72,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .detail-val{font-size:0.82rem;color:#333;line-height:1.5;}
 .stars{color:#e8a020;font-size:0.82rem;}
 
+/* 랭킹 탭 */
+.rank-inner-tabs{display:flex;border-bottom:1px solid #e8e4dc;background:#fff;padding:0 1.25rem;}
+.rank-inner-tab{padding:0.75rem 1rem;font-size:0.82rem;border:none;background:none;cursor:pointer;font-family:inherit;color:#aaa;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.rank-inner-tab.active{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:600;}
+
+.rank-cards{padding:0.75rem 1.25rem;display:flex;flex-direction:column;gap:10px;}
+.rank-list-card{background:#fff;border-radius:12px;border:1px solid #e8e4dc;overflow:hidden;}
+.rank-list-header{padding:0.9rem 1rem;cursor:pointer;}
+.rank-list-header:hover{background:#fdfcfb;}
+.rank-list-title{font-size:0.9rem;font-weight:600;margin-bottom:0.6rem;}
+.rank-preview{display:flex;flex-direction:column;gap:5px;}
+.rank-preview-item{display:flex;align-items:center;gap:8px;}
+.medal{font-size:1rem;min-width:22px;}
+.rank-preview-theme{font-size:0.82rem;color:#333;}
+.rank-preview-comment{font-size:0.75rem;color:#aaa;}
+.rank-full{border-top:1px solid #f0ede8;padding:0.85rem 1rem;display:none;flex-direction:column;gap:0;}
+.rank-full.open{display:flex;}
+.rank-full-item{display:flex;align-items:flex-start;gap:10px;padding:0.6rem 0;border-bottom:1px solid #f5f3ef;}
+.rank-full-item:last-child{border-bottom:none;}
+.rank-num-badge{font-size:0.8rem;font-weight:700;min-width:24px;color:#bbb;padding-top:2px;}
+.rank-full-info{flex:1;}
+.rank-full-theme{font-size:0.85rem;font-weight:600;}
+.rank-full-comment{font-size:0.75rem;color:#888;margin-top:2px;}
+.rank-full-score{font-size:0.82rem;font-weight:600;color:#c0392b;}
+
 /* 댓글 */
 .comment-section{border-top:1px solid #f0ede8;padding:0.75rem 1rem;}
 .comment-list{display:flex;flex-direction:column;gap:8px;margin-bottom:0.75rem;}
@@ -92,21 +109,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .comment-input{flex:1;border:1px solid #e0ddd6;border-radius:8px;padding:0.45rem 0.65rem;font-size:0.8rem;font-family:inherit;outline:none;}
 .comment-input:focus{border-color:#1a1a1a;}
 .comment-submit{background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:0.45rem 0.75rem;font-size:0.78rem;cursor:pointer;font-family:inherit;white-space:nowrap;}
-
-/* 랭킹 */
-.rank-tabs{display:flex;border-bottom:1px solid #e8e4dc;background:#fff;padding:0 1.25rem;}
-.rank-tab{padding:0.75rem 1rem;font-size:0.82rem;border:none;background:none;cursor:pointer;font-family:inherit;color:#aaa;border-bottom:2px solid transparent;margin-bottom:-1px;}
-.rank-tab.active{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:600;}
-.rank-list{padding:0.75rem 1.25rem;display:flex;flex-direction:column;gap:8px;}
-.rank-card{background:#fff;border-radius:12px;border:1px solid #e8e4dc;padding:0.9rem 1rem;display:flex;align-items:center;gap:0.75rem;}
-.rank-num{font-size:1.1rem;font-weight:700;min-width:28px;color:#bbb;}
-.rank-num.top1{color:#f0b429;}
-.rank-num.top2{color:#aaa;}
-.rank-num.top3{color:#c8845a;}
-.rank-info{flex:1;}
-.rank-theme{font-size:0.9rem;font-weight:600;}
-.rank-shop{font-size:0.73rem;color:#888;margin-top:1px;}
-.rank-score{font-size:1rem;font-weight:700;}
 
 /* 자유게시판 */
 .post-list{padding:0.75rem 1.25rem;display:flex;flex-direction:column;gap:9px;}
@@ -121,7 +123,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .post-body{border-top:1px solid #f0ede8;padding:0.85rem 1rem;display:none;}
 .post-body.open{display:block;}
 .post-content{font-size:0.85rem;line-height:1.8;color:#333;white-space:pre-wrap;}
-.comment-count{font-size:0.7rem;color:#aaa;margin-top:0.5rem;}
+.comment-count{font-size:0.7rem;color:#aaa;margin-left:auto;}
 
 /* 폼 모달 */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.42);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
@@ -150,6 +152,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .btn-cancel{background:#f0ede8;color:#555;border:none;border-radius:10px;padding:0.7rem 1rem;font-size:0.88rem;cursor:pointer;font-family:inherit;}
 .btn-delete{background:#fce8e8;color:#c0392b;border:none;border-radius:10px;padding:0.7rem 0.9rem;font-size:0.88rem;cursor:pointer;font-family:inherit;}
 
+/* 랭킹 작성 모달 전용 */
+.rank-items-list{display:flex;flex-direction:column;gap:8px;margin-bottom:0.75rem;}
+.rank-item-row{display:flex;align-items:center;gap:8px;}
+.rank-item-num{font-size:0.85rem;font-weight:700;color:#bbb;min-width:22px;}
+.rank-item-theme{flex:1;}
+.rank-item-score{width:60px;}
+.rank-item-comment{flex:2;}
+.rank-item-del{background:none;border:none;color:#ddd;font-size:1rem;cursor:pointer;padding:0 4px;}
+.rank-item-del:hover{color:#c0392b;}
+.add-rank-item-btn{background:#f5f3ef;border:1px dashed #ddd;border-radius:8px;padding:0.5rem;font-size:0.82rem;color:#888;cursor:pointer;font-family:inherit;width:100%;text-align:center;}
+.add-rank-item-btn:hover{background:#eee;}
+
 /* 비번 모달 */
 .pw-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.42);z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem;}
 .pw-modal{background:#fff;border-radius:16px;padding:1.5rem 1.25rem;width:100%;max-width:340px;}
@@ -157,15 +171,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .pw-modal p{font-size:0.78rem;color:#888;margin-bottom:1rem;}
 .pw-err{font-size:0.75rem;color:#c0392b;margin-top:0.4rem;display:none;}
 
-/* 기타 */
 .empty{text-align:center;padding:3.5rem 2rem;color:#ccc;}
 .empty-icon{font-size:2.2rem;margin-bottom:0.6rem;}
 .empty p{font-size:0.88rem;}
 .loading{text-align:center;padding:3rem;color:#bbb;font-size:0.88rem;}
 .toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:0.6rem 1.2rem;border-radius:20px;font-size:0.82rem;z-index:400;opacity:0;transition:opacity 0.3s;pointer-events:none;}
 .toast.show{opacity:1;}
-.section-title{font-size:0.78rem;font-weight:600;color:#999;padding:0.75rem 1.25rem 0.3rem;letter-spacing:0.05em;text-transform:uppercase;}
-
 @media(max-width:400px){.stats{grid-template-columns:repeat(2,1fr);}}
 </style>
 </head>
@@ -173,7 +184,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 
 <div class="header">
   <div class="header-left">
-    <h1>🔐 갇힘일지</h1>
+    <h1>👻 갇힘일지</h1>
     <p id="total-sub">불러오는 중...</p>
   </div>
   <button class="add-btn" id="main-add-btn" onclick="handleAddBtn()">+ 추가</button>
@@ -211,15 +222,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 
 <!-- 랭킹 탭 -->
 <div class="tab-panel" id="panel-rank">
+  <div class="rank-inner-tabs">
+    <button class="rank-inner-tab active" id="rit-horror" onclick="setRankInnerTab('horror',this)">👻 공포 랭킹</button>
+    <button class="rank-inner-tab" id="rit-life" onclick="setRankInnerTab('life',this)">✨ 인생 테마</button>
+  </div>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
-    <input class="search-input" id="rank-search" placeholder="테마, 매장 검색..." oninput="renderRanking()">
+    <input class="search-input" id="rank-search" placeholder="제목, 작성자 검색..." oninput="renderRankCards()">
   </div>
-  <div class="rank-tabs">
-    <button class="rank-tab active" onclick="setRankTab('horror',this)">👻 공포 랭킹</button>
-    <button class="rank-tab" onclick="setRankTab('life',this)">✨ 인생 테마</button>
-  </div>
-  <div class="rank-list" id="rank-list"><div class="loading">불러오는 중...</div></div>
+  <div class="rank-cards" id="rank-cards-list"><div class="loading">불러오는 중...</div></div>
 </div>
 
 <!-- 자유게시판 탭 -->
@@ -231,22 +242,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
   <div class="post-list" id="post-list"><div class="loading">불러오는 중...</div></div>
 </div>
 
-<!-- 하단 탭 -->
 <nav class="bottom-nav">
-  <button class="nav-btn active" id="nav-record" onclick="switchTab('record')">
-    <span class="nav-icon">🗝️</span><span class="nav-label">기록</span>
-  </button>
-  <button class="nav-btn" id="nav-rank" onclick="switchTab('rank')">
-    <span class="nav-icon">🏆</span><span class="nav-label">랭킹</span>
-  </button>
-  <button class="nav-btn" id="nav-free" onclick="switchTab('free')">
-    <span class="nav-icon">📝</span><span class="nav-label">자유</span>
-  </button>
+  <button class="nav-btn active" id="nav-record" onclick="switchTab('record')"><span class="nav-icon">🗝️</span><span class="nav-label">기록</span></button>
+  <button class="nav-btn" id="nav-rank" onclick="switchTab('rank')"><span class="nav-icon">🏆</span><span class="nav-label">랭킹</span></button>
+  <button class="nav-btn" id="nav-free" onclick="switchTab('free')"><span class="nav-icon">📝</span><span class="nav-label">자유</span></button>
 </nav>
 
 <div class="toast" id="toast"></div>
 
-<!-- 기록 추가/수정 모달 -->
+<!-- 기록 모달 -->
 <div class="modal-bg" id="modal-bg" style="display:none" onclick="handleBgClick(event)">
   <div class="modal">
     <div class="modal-title" id="modal-title">새 기록 추가</div>
@@ -274,15 +278,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
     <div class="form-row"><label class="form-label">장르</label><input class="form-input" id="f-genre" placeholder="예: 공포, 추리, 드라마"></div>
     <div class="form-row">
       <label class="form-label">문제 난이도</label>
-      <div class="num-group">
-        <button class="num-btn" id="d-1" onclick="toggleDiff(1)">1</button><button class="num-btn" id="d-2" onclick="toggleDiff(2)">2</button><button class="num-btn" id="d-3" onclick="toggleDiff(3)">3</button><button class="num-btn" id="d-4" onclick="toggleDiff(4)">4</button><button class="num-btn" id="d-5" onclick="toggleDiff(5)">5</button>
-      </div>
+      <div class="num-group"><button class="num-btn" id="d-1" onclick="toggleDiff(1)">1</button><button class="num-btn" id="d-2" onclick="toggleDiff(2)">2</button><button class="num-btn" id="d-3" onclick="toggleDiff(3)">3</button><button class="num-btn" id="d-4" onclick="toggleDiff(4)">4</button><button class="num-btn" id="d-5" onclick="toggleDiff(5)">5</button></div>
     </div>
     <div class="form-row">
       <label class="form-label">공포도</label>
-      <div class="num-group">
-        <button class="num-btn" id="h-1" onclick="toggleHorror(1)">1</button><button class="num-btn" id="h-2" onclick="toggleHorror(2)">2</button><button class="num-btn" id="h-3" onclick="toggleHorror(3)">3</button><button class="num-btn" id="h-4" onclick="toggleHorror(4)">4</button><button class="num-btn" id="h-5" onclick="toggleHorror(5)">5</button>
-      </div>
+      <div class="num-group"><button class="num-btn" id="h-1" onclick="toggleHorror(1)">1</button><button class="num-btn" id="h-2" onclick="toggleHorror(2)">2</button><button class="num-btn" id="h-3" onclick="toggleHorror(3)">3</button><button class="num-btn" id="h-4" onclick="toggleHorror(4)">4</button><button class="num-btn" id="h-5" onclick="toggleHorror(5)">5</button></div>
     </div>
     <div class="form-row">
       <label class="form-label">직원 연출</label>
@@ -326,7 +326,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
   </div>
 </div>
 
-<!-- 자유게시판 글쓰기 모달 -->
+<!-- 랭킹 작성 모달 -->
+<div class="modal-bg" id="rank-modal-bg" style="display:none" onclick="handleRankBgClick(event)">
+  <div class="modal">
+    <div class="modal-title" id="rank-modal-title">랭킹 작성</div>
+    <div class="form-row-2">
+      <div><label class="form-label">닉네임 *</label><input class="form-input" id="r-nick" placeholder="예: 정원"></div>
+      <div><label class="form-label">비밀번호 *</label><input class="form-input" id="r-pw" type="password" placeholder="수정 시 필요해요"></div>
+    </div>
+    <div class="form-row"><label class="form-label">제목 *</label><input class="form-input" id="r-title" placeholder="예: 정원이의 공포도 순위"></div>
+    <div class="form-row">
+      <label class="form-label" id="r-items-label">순위 목록</label>
+      <div class="rank-items-list" id="rank-items-list"></div>
+      <button class="add-rank-item-btn" onclick="addRankItem()">+ 항목 추가</button>
+    </div>
+    <div class="form-btns">
+      <button class="btn-cancel" onclick="closeRankModal()">취소</button>
+      <button class="btn-delete" id="rank-btn-delete" style="display:none" onclick="deleteRankCard()">삭제</button>
+      <button class="btn-save" onclick="saveRankCard()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 자유게시판 모달 -->
 <div class="modal-bg" id="post-modal-bg" style="display:none" onclick="handlePostBgClick(event)">
   <div class="modal">
     <div class="modal-title" id="post-modal-title">새 글 쓰기</div>
@@ -360,7 +382,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, setDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, setDoc, deleteDoc, doc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAidrKvznTQ5BO85jNZ4FsQZ7QYUy3jUHw",
@@ -375,52 +397,39 @@ const db = getFirestore(app);
 
 const RATING_COLORS={'흙길':'#c8a97e','풀길':'#8abf7a','풀꽃길':'#6aab97','꽃길':'#e895a0','꽃밭길':'#d46fa0','인생 테마':'#8b6bbf'};
 const RATING_BG={'흙길':'#fdf5ec','풀길':'#eef7ea','풀꽃길':'#e8f6f3','꽃길':'#fdeef0','꽃밭길':'#f9eaf4','인생 테마':'#f2edfb'};
+const MEDALS=['🥇','🥈','🥉'];
 
-let records=[], posts=[], comments={};
-let currentFilter='all', editId=null, editPostId=null;
+let records=[], posts=[], rankCards=[], comments={};
+let currentFilter='all', editId=null, editPostId=null, editRankId=null;
 let resultVal='success', recVal='rec', ratingVal='인생 테마';
 let diffVal=0, horrorVal=0, actorVal='', posVal='';
 let pwCallback=null, pwTargetId=null, openDetailId=null;
-let currentTab='record', rankTab='horror';
+let currentTab='record', rankInnerTab='horror';
+let rankItemsData=[];
 
 async function hashPw(pw){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
-}
-
-// 실시간 리스너
 onSnapshot(query(collection(db,'records')),snap=>{
   records=snap.docs.map(d=>({id:d.id,...d.data()}));
-  renderRecords();renderRanking();
+  renderRecords();
   document.getElementById('s-total').textContent=records.length;
   document.getElementById('s-success').textContent=records.filter(r=>r.result==='success').length;
   document.getElementById('s-rec').textContent=records.filter(r=>r.rec==='rec').length;
   document.getElementById('s-life').textContent=records.filter(r=>r.rating==='인생 테마').length;
   document.getElementById('total-sub').textContent='기록 '+records.length+'개';
 });
-onSnapshot(query(collection(db,'posts')),snap=>{
-  posts=snap.docs.map(d=>({id:d.id,...d.data()}));
-  renderPosts();
-});
+onSnapshot(query(collection(db,'posts')),snap=>{posts=snap.docs.map(d=>({id:d.id,...d.data()}));renderPosts();});
+onSnapshot(query(collection(db,'rankCards')),snap=>{rankCards=snap.docs.map(d=>({id:d.id,...d.data()}));renderRankCards();});
 onSnapshot(query(collection(db,'comments')),snap=>{
   comments={};
-  snap.docs.forEach(d=>{
-    const data=d.data();
-    if(!comments[data.targetId])comments[data.targetId]=[];
-    comments[data.targetId].push({id:d.id,...data});
-  });
-  if(currentTab==='record')renderRecords();
-  else if(currentTab==='free')renderPosts();
-  else renderRanking();
+  snap.docs.forEach(d=>{const data=d.data();if(!comments[data.targetId])comments[data.targetId]=[];comments[data.targetId].push({id:d.id,...data});});
+  renderRecords();renderPosts();renderRankCards();
 });
 
-// 탭 전환
 window.switchTab=function(tab){
   currentTab=tab;
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
@@ -429,13 +438,19 @@ window.switchTab=function(tab){
   document.getElementById('nav-'+tab).classList.add('active');
   const addBtn=document.getElementById('main-add-btn');
   if(tab==='record'){addBtn.textContent='+ 추가';addBtn.style.display='';}
+  else if(tab==='rank'){addBtn.textContent='🏆 랭킹 작성';addBtn.style.display='';}
   else if(tab==='free'){addBtn.textContent='✍️ 글쓰기';addBtn.style.display='';}
-  else{addBtn.style.display='none';}
 }
-
 window.handleAddBtn=function(){
   if(currentTab==='record')openAddModal();
+  else if(currentTab==='rank')openRankModal();
   else if(currentTab==='free')openPostModal();
+}
+window.setRankInnerTab=function(tab,btn){
+  rankInnerTab=tab;
+  document.querySelectorAll('.rank-inner-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRankCards();
 }
 
 // 기록 렌더
@@ -448,15 +463,9 @@ window.renderRecords=function(){
   else if(currentFilter==='life')filtered=filtered.filter(r=>r.rating==='인생 테마');
   if(q)filtered=filtered.filter(r=>(r.theme||'').toLowerCase().includes(q)||(r.shop||'').toLowerCase().includes(q)||(r.nick||'').toLowerCase().includes(q));
   const sort=document.getElementById('sort-select').value;
-  filtered=[...filtered].sort((a,b)=>{
-    if(sort==='reg-desc')return(b.createdAt||0)-(a.createdAt||0);
-    if(sort==='reg-asc')return(a.createdAt||0)-(b.createdAt||0);
-    if(sort==='play-desc')return(b.date||'').localeCompare(a.date||'');
-    if(sort==='play-asc')return(a.date||'').localeCompare(b.date||'');
-    return 0;
-  });
+  filtered=[...filtered].sort((a,b)=>sort==='reg-desc'?(b.createdAt||0)-(a.createdAt||0):sort==='reg-asc'?(a.createdAt||0)-(b.createdAt||0):sort==='play-desc'?(b.date||'').localeCompare(a.date||''):(a.date||'').localeCompare(b.date||''));
   const list=document.getElementById('records-list');
-  if(!filtered.length){list.innerHTML='<div class="empty"><div class="empty-icon">🗝️</div><p>'+(q?'검색 결과가 없어요':currentFilter==='all'?'아직 기록이 없어요.<br>첫 방탈출 기록을 남겨보세요!':'해당하는 기록이 없어요.')+'</p></div>';return;}
+  if(!filtered.length){list.innerHTML=`<div class="empty"><div class="empty-icon">🗝️</div><p>${q?'검색 결과가 없어요':currentFilter==='all'?'아직 기록이 없어요.<br>첫 방탈출 기록을 남겨보세요!':'해당하는 기록이 없어요.'}</p></div>`;return;}
   const stars=n=>n?'★'.repeat(n)+'☆'.repeat(5-n):'-';
   list.innerHTML=filtered.map(r=>{
     const rc=RATING_COLORS[r.rating]||'#888',rb=RATING_BG[r.rating]||'#f5f3ef';
@@ -465,11 +474,10 @@ window.renderRecords=function(){
     return`<div class="record-card" id="card-${r.id}">
       <div class="record-card-header" onclick="toggleDetail('${r.id}')">
         <div class="record-top">
-          <div><div class="record-theme">${r.theme||''}</div>${r.shop?`<div class="record-shop">${r.shop}</div>`:''} ${r.nick?`<div class="record-nick">by ${r.nick}${r.pos?` <span style="background:#f0ede8;border-radius:6px;padding:1px 5px;font-size:0.65rem;color:#555">${r.pos==='쫄'?'😱 쫄':'🛡️ 탱'}</span>`:''}</div>`:''}</div>
-          <div class="record-top-right">
-            <span class="rating-badge" style="background:${rb};color:${rc}">${r.rating||''}</span>
-            <div style="position:relative"><button class="kebab-btn" onclick="toggleKebab(event,'${r.id}')">⋯</button>
-              <div class="kebab-menu" id="kebab-${r.id}" style="display:none"><button class="kebab-item" onclick="onEditClick(event,'${r.id}')">수정하기</button></div>
+          <div><div class="record-theme">${r.theme||''}</div>${r.shop?`<div class="record-shop">${r.shop}</div>`:''}<div class="record-nick">by ${r.nick||''}${r.pos?` <span style="background:#f0ede8;border-radius:6px;padding:1px 5px;font-size:0.65rem;color:#555">${r.pos==='쫄'?'😱 쫄':'🛡️ 탱'}</span>`:''}</div></div>
+          <div class="record-top-right"><span class="rating-badge" style="background:${rb};color:${rc}">${r.rating||''}</span>
+            <div style="position:relative"><button class="kebab-btn" onclick="toggleKebab(event,'rec-${r.id}')">⋯</button>
+              <div class="kebab-menu" id="kebab-rec-${r.id}" style="display:none"><button class="kebab-item" onclick="onEditClick(event,'${r.id}')">수정하기</button></div>
             </div>
           </div>
         </div>
@@ -490,59 +498,54 @@ window.renderRecords=function(){
       </div>
       ${isOpen?`<div class="comment-section">
         ${cmts.length?`<div class="comment-list">${cmts.map(c=>`<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}</span></div><div class="comment-text">${c.text}</div></div>`).join('')}</div>`:''}
-        <div class="comment-input-row">
-          <input class="comment-input" id="ci-${r.id}" placeholder="댓글을 남겨요...">
-          <button class="comment-submit" onclick="submitComment('${r.id}','ci-${r.id}')">등록</button>
-        </div>
+        <div class="comment-input-row"><input class="comment-input" id="ci-${r.id}" placeholder="댓글을 남겨요..."><button class="comment-submit" onclick="submitComment('${r.id}','ci-${r.id}')">등록</button></div>
       </div>`:''}
     </div>`;
   }).join('');
 }
 
-// 랭킹 렌더
-window.renderRanking=function(){
+// 랭킹 카드 렌더
+window.renderRankCards=function(){
   const q=document.getElementById('rank-search').value.trim().toLowerCase();
-  let filtered=records.filter(r=>r.horror>0||r.rating==='인생 테마');
-  if(q)filtered=filtered.filter(r=>(r.theme||'').toLowerCase().includes(q)||(r.shop||'').toLowerCase().includes(q));
-  let list;
-  if(rankTab==='horror'){
-    list=[...filtered].filter(r=>r.horror>0).sort((a,b)=>(b.horror||0)-(a.horror||0));
-  } else {
-    list=[...filtered].filter(r=>r.rating==='인생 테마').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-  }
-  const el=document.getElementById('rank-list');
-  if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">🏆</div><p>'+(q?'검색 결과가 없어요':'아직 기록이 없어요')+'</p></div>';return;}
-  el.innerHTML=list.map((r,i)=>{
-    const numClass=i===0?'top1':i===1?'top2':i===2?'top3':'';
-    const cmts=(comments[r.id]||[]).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
-    const isOpen=openDetailId==='rank-'+r.id;
-    return`<div class="record-card">
-      <div class="rank-card" onclick="toggleDetail('rank-${r.id}')">
-        <div class="rank-num ${numClass}">${i+1}</div>
-        <div class="rank-info">
-          <div class="rank-theme">${r.theme||''}</div>
-          <div class="rank-shop">${r.shop||''} ${r.nick?`· by ${r.nick}`:''}</div>
+  let filtered=rankCards.filter(r=>r.type===rankInnerTab);
+  if(q)filtered=filtered.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.nick||'').toLowerCase().includes(q));
+  filtered=[...filtered].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  const el=document.getElementById('rank-cards-list');
+  if(!filtered.length){el.innerHTML=`<div class="empty"><div class="empty-icon">${rankInnerTab==='horror'?'👻':'✨'}</div><p>${q?'검색 결과가 없어요':'아직 랭킹이 없어요.<br>첫 랭킹을 작성해보세요!'}</p></div>`;return;}
+  el.innerHTML=filtered.map(rc=>{
+    const isOpen=openDetailId==='rank-'+rc.id;
+    const items=rc.items||[];
+    const top3=items.slice(0,3);
+    const cmts=(comments[rc.id]||[]).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+    return`<div class="rank-list-card">
+      <div class="rank-list-header" onclick="toggleDetail('rank-${rc.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="rank-list-title">${rc.title||''}</div>
+            <div style="font-size:0.7rem;color:#bbb;margin-bottom:0.5rem">by ${rc.nick||''} · ${rc.date||''}</div>
+          </div>
+          <div style="position:relative"><button class="kebab-btn" onclick="toggleKebab(event,'rank-${rc.id}')">⋯</button>
+            <div class="kebab-menu" id="kebab-rank-${rc.id}" style="display:none"><button class="kebab-item" onclick="onRankEditClick(event,'${rc.id}')">수정하기</button></div>
+          </div>
         </div>
-        <div class="rank-score" style="color:${rankTab==='horror'?'#c0392b':'#8b6bbf'}">
-          ${rankTab==='horror'?'👻 '+(r.horror||0):'✨'}
+        <div class="rank-preview">
+          ${top3.map((item,i)=>`<div class="rank-preview-item"><span class="medal">${MEDALS[i]||''}</span><span class="rank-preview-theme">${item.theme||''}</span>${rankInnerTab==='horror'&&item.score?`<span style="font-size:0.72rem;color:#c0392b;margin-left:auto">👻 ${item.score}</span>`:''}${rankInnerTab==='life'&&item.comment?`<span class="rank-preview-comment">${item.comment}</span>`:''}</div>`).join('')}
+          ${items.length>3?`<div style="font-size:0.72rem;color:#bbb;padding-left:28px">+${items.length-3}개 더보기</div>`:''}
         </div>
+      </div>
+      <div class="rank-full ${isOpen?'open':''}" id="rankfull-${rc.id}">
+        ${items.map((item,i)=>`<div class="rank-full-item">
+          <div class="rank-num-badge">${i<3?MEDALS[i]:(i+1)+'위'}</div>
+          <div class="rank-full-info"><div class="rank-full-theme">${item.theme||''}</div>${item.comment?`<div class="rank-full-comment">${item.comment}</div>`:''}</div>
+          ${rankInnerTab==='horror'&&item.score?`<div class="rank-full-score">👻 ${item.score}</div>`:''}
+        </div>`).join('')}
       </div>
       ${isOpen?`<div class="comment-section">
         ${cmts.length?`<div class="comment-list">${cmts.map(c=>`<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}</span></div><div class="comment-text">${c.text}</div></div>`).join('')}</div>`:''}
-        <div class="comment-input-row">
-          <input class="comment-input" id="ci-rank-${r.id}" placeholder="댓글을 남겨요...">
-          <button class="comment-submit" onclick="submitComment('${r.id}','ci-rank-${r.id}')">등록</button>
-        </div>
+        <div class="comment-input-row"><input class="comment-input" id="ci-rank-${rc.id}" placeholder="댓글을 남겨요..."><button class="comment-submit" onclick="submitComment('${rc.id}','ci-rank-${rc.id}')">등록</button></div>
       </div>`:''}
     </div>`;
   }).join('');
-}
-
-window.setRankTab=function(tab,btn){
-  rankTab=tab;
-  document.querySelectorAll('.rank-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderRanking();
 }
 
 // 자유게시판 렌더
@@ -551,14 +554,13 @@ window.renderPosts=function(){
   let filtered=[...posts].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   if(q)filtered=filtered.filter(p=>(p.title||'').toLowerCase().includes(q)||(p.nick||'').toLowerCase().includes(q));
   const el=document.getElementById('post-list');
-  if(!filtered.length){el.innerHTML='<div class="empty"><div class="empty-icon">📝</div><p>'+(q?'검색 결과가 없어요':'아직 글이 없어요.<br>첫 글을 남겨보세요!')+'</p></div>';return;}
+  if(!filtered.length){el.innerHTML=`<div class="empty"><div class="empty-icon">📝</div><p>${q?'검색 결과가 없어요':'아직 글이 없어요.<br>첫 글을 남겨보세요!'}</p></div>`;return;}
   el.innerHTML=filtered.map(p=>{
     const isOpen=openDetailId==='post-'+p.id;
     const cmts=(comments[p.id]||[]).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
     return`<div class="post-card">
       <div class="post-header" onclick="toggleDetail('post-${p.id}')">
-        <div class="post-title-row">
-          <div class="post-title">${p.title||''}</div>
+        <div class="post-title-row"><div class="post-title">${p.title||''}</div>
           <div style="position:relative"><button class="kebab-btn" onclick="toggleKebab(event,'post-${p.id}')">⋯</button>
             <div class="kebab-menu" id="kebab-post-${p.id}" style="display:none"><button class="kebab-item" onclick="onPostEditClick(event,'${p.id}')">수정하기</button></div>
           </div>
@@ -570,10 +572,7 @@ window.renderPosts=function(){
         <div class="post-content">${p.content||''}</div>
         <div class="comment-section" style="padding:0.75rem 0 0">
           ${cmts.length?`<div class="comment-list">${cmts.map(c=>`<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}</span></div><div class="comment-text">${c.text}</div></div>`).join('')}</div>`:''}
-          <div class="comment-input-row">
-            <input class="comment-input" id="ci-post-${p.id}" placeholder="댓글을 남겨요...">
-            <button class="comment-submit" onclick="submitComment('${p.id}','ci-post-${p.id}')">등록</button>
-          </div>
+          <div class="comment-input-row"><input class="comment-input" id="ci-post-${p.id}" placeholder="댓글을 남겨요..."><button class="comment-submit" onclick="submitComment('${p.id}','ci-post-${p.id}')">등록</button></div>
         </div>
       </div>
     </div>`;
@@ -581,22 +580,15 @@ window.renderPosts=function(){
 }
 
 // 댓글
-window.submitComment=async function(targetId, inputId){
+window.submitComment=async function(targetId,inputId){
   const input=document.getElementById(inputId);
-  const text=input.value.trim();
-  if(!text)return;
-  const nick=prompt('닉네임을 입력해주세요');
-  if(!nick)return;
-  try{
-    await addDoc(collection(db,'comments'),{targetId,nick,text,date:new Date().toLocaleDateString('ko-KR'),createdAt:Date.now()});
-    input.value='';
-    showToast('댓글이 등록됐어요 💬');
-  }catch(e){console.error(e);}
+  const text=input.value.trim();if(!text)return;
+  const nick=prompt('닉네임을 입력해주세요');if(!nick)return;
+  try{await addDoc(collection(db,'comments'),{targetId,nick,text,date:new Date().toLocaleDateString('ko-KR'),createdAt:Date.now()});input.value='';showToast('댓글이 등록됐어요 💬');}catch(e){console.error(e);}
 }
 
-// 기록 CRUD
+window.toggleDetail=function(id){openDetailId=openDetailId===id?null:id;renderRecords();renderRankCards();renderPosts();}
 window.setFilter=function(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderRecords();}
-window.toggleDetail=function(id){openDetailId=openDetailId===id?null:id;renderRecords();renderRanking();renderPosts();}
 window.toggleKebab=function(e,id){
   e.stopPropagation();
   document.querySelectorAll('.kebab-menu').forEach(m=>{if(m.id!=='kebab-'+id)m.style.display='none';});
@@ -604,32 +596,21 @@ window.toggleKebab=function(e,id){
 }
 document.addEventListener('click',()=>document.querySelectorAll('.kebab-menu').forEach(m=>m.style.display='none'));
 
-window.onEditClick=function(e,id){
-  e.stopPropagation();
-  const r=records.find(x=>x.id===id);if(!r)return;
-  pwTargetId=id;pwCallback=()=>openEditModal(id);
-  document.getElementById('pw-modal-desc').textContent=`"${r.nick||'작성자'}"의 비밀번호를 입력하세요`;
-  document.getElementById('pw-input').value='';document.getElementById('pw-err').style.display='none';
-  document.getElementById('pw-modal-bg').style.display='flex';
-}
-window.onPostEditClick=function(e,id){
-  e.stopPropagation();
-  const p=posts.find(x=>x.id===id);if(!p)return;
-  pwTargetId=id;pwCallback=()=>openEditPostModal(id);
-  document.getElementById('pw-modal-desc').textContent=`"${p.nick||'작성자'}"의 비밀번호를 입력하세요`;
-  document.getElementById('pw-input').value='';document.getElementById('pw-err').style.display='none';
-  document.getElementById('pw-modal-bg').style.display='flex';
-}
+// 비번 모달
 window.confirmPw=async function(){
   const pw=document.getElementById('pw-input').value;
   if(!pw){document.getElementById('pw-err').style.display='block';document.getElementById('pw-err').textContent='비밀번호를 입력해주세요';return;}
   const hash=await hashPw(pw);
-  const r=records.find(x=>x.id===pwTargetId)||posts.find(x=>x.id===pwTargetId);
+  const all=[...records,...posts,...rankCards];
+  const r=all.find(x=>x.id===pwTargetId);
   if(!r||r.pwHash!==hash){document.getElementById('pw-err').style.display='block';document.getElementById('pw-err').textContent='비밀번호가 맞지 않아요';return;}
   const cb=pwCallback;closePwModal();setTimeout(cb,50);
 }
 window.closePwModal=function(){document.getElementById('pw-modal-bg').style.display='none';pwCallback=null;pwTargetId=null;}
+function showPwModal(id,cb,nick){pwTargetId=id;pwCallback=cb;document.getElementById('pw-modal-desc').textContent=`"${nick||'작성자'}"의 비밀번호를 입력하세요`;document.getElementById('pw-input').value='';document.getElementById('pw-err').style.display='none';document.getElementById('pw-modal-bg').style.display='flex';}
 
+// 기록 CRUD
+window.onEditClick=function(e,id){e.stopPropagation();const r=records.find(x=>x.id===id);if(!r)return;showPwModal(id,()=>openEditModal(id),r.nick);}
 window.openAddModal=function(){
   editId=null;
   document.getElementById('modal-title').textContent='새 기록 추가';
@@ -642,83 +623,84 @@ window.openAddModal=function(){
   document.getElementById('modal-bg').style.display='flex';
 }
 function openEditModal(id){
-  const r=records.find(x=>x.id===id);if(!r)return;
-  editId=id;
-  document.getElementById('modal-title').textContent='기록 수정';
-  document.getElementById('btn-delete').style.display='';
+  const r=records.find(x=>x.id===id);if(!r)return;editId=id;
+  document.getElementById('modal-title').textContent='기록 수정';document.getElementById('btn-delete').style.display='';
   document.getElementById('f-nick').value=r.nick||'';document.getElementById('f-pw').value='';
   document.getElementById('f-theme').value=r.theme||'';document.getElementById('f-shop').value=r.shop||'';
   document.getElementById('f-date').value=r.date||'';document.getElementById('f-party').value=r.party||'';
-  document.getElementById('f-hint').value=r.hint!==undefined?r.hint:'';document.getElementById('f-genre').value=r.genre||'';
-  document.getElementById('f-memo').value=r.memo||'';
-  setResultUI(r.result||'success');setRecUI(r.rec||'rec');selectRating(r.rating||'인생 테마');
-  setDiffUI(r.diff||0);setHorrorUI(r.horror||0);setActorUI(r.actor);setPosUI(r.pos||'');
+  document.getElementById('f-hint').value=r.hint!==undefined?r.hint:'';document.getElementById('f-genre').value=r.genre||'';document.getElementById('f-memo').value=r.memo||'';
+  setResultUI(r.result||'success');setRecUI(r.rec||'rec');selectRating(r.rating||'인생 테마');setDiffUI(r.diff||0);setHorrorUI(r.horror||0);setActorUI(r.actor);setPosUI(r.pos||'');
   document.getElementById('modal-bg').style.display='flex';
 }
 window.closeModal=function(){document.getElementById('modal-bg').style.display='none';}
 window.handleBgClick=function(e){if(e.target===document.getElementById('modal-bg'))closeModal();}
-
 window.saveRecord=async function(){
-  const nick=document.getElementById('f-nick').value.trim();
-  const pw=document.getElementById('f-pw').value;
-  const theme=document.getElementById('f-theme').value.trim();
-  if(!nick){alert('닉네임을 입력해주세요');return;}
-  if(!pw&&!editId){alert('비밀번호를 입력해주세요');return;}
-  if(!theme){alert('테마명을 입력해주세요');return;}
+  const nick=document.getElementById('f-nick').value.trim(),pw=document.getElementById('f-pw').value,theme=document.getElementById('f-theme').value.trim();
+  if(!nick){alert('닉네임을 입력해주세요');return;}if(!pw&&!editId){alert('비밀번호를 입력해주세요');return;}if(!theme){alert('테마명을 입력해주세요');return;}
   const r={nick,pos:posVal,theme,shop:document.getElementById('f-shop').value.trim(),date:document.getElementById('f-date').value,party:document.getElementById('f-party').value,hint:document.getElementById('f-hint').value,genre:document.getElementById('f-genre').value.trim(),result:resultVal,rec:recVal,rating:ratingVal,diff:diffVal,horror:horrorVal,actor:actorVal,memo:document.getElementById('f-memo').value.trim(),updatedAt:Date.now()};
   if(pw)r.pwHash=await hashPw(pw);
-  try{
-    if(editId){const existing=records.find(x=>x.id===editId);if(existing&&!pw)r.pwHash=existing.pwHash;r.createdAt=existing?existing.createdAt:Date.now();await setDoc(doc(db,'records',editId),r);}
-    else{r.createdAt=Date.now();await addDoc(collection(db,'records'),r);}
-    closeModal();showToast('저장됐어요 ✅');
-  }catch(e){alert('저장 중 오류가 발생했어요');console.error(e);}
+  try{if(editId){const ex=records.find(x=>x.id===editId);if(ex&&!pw)r.pwHash=ex.pwHash;r.createdAt=ex?ex.createdAt:Date.now();await setDoc(doc(db,'records',editId),r);}else{r.createdAt=Date.now();await addDoc(collection(db,'records'),r);}closeModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
 }
-window.deleteRecord=async function(){
-  if(!confirm('이 기록을 삭제할까요?'))return;
-  try{await deleteDoc(doc(db,'records',editId));closeModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');console.error(e);}
+window.deleteRecord=async function(){if(!confirm('이 기록을 삭제할까요?'))return;try{await deleteDoc(doc(db,'records',editId));closeModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');}}
+
+// 랭킹 CRUD
+window.openRankModal=function(){
+  editRankId=null;rankItemsData=[{theme:'',score:'',comment:''}];
+  document.getElementById('rank-modal-title').textContent=rankInnerTab==='horror'?'👻 공포 랭킹 작성':'✨ 인생 테마 랭킹 작성';
+  document.getElementById('rank-btn-delete').style.display='none';
+  document.getElementById('r-nick').value='';document.getElementById('r-pw').value='';document.getElementById('r-title').value='';
+  document.getElementById('r-items-label').textContent=rankInnerTab==='horror'?'순위 목록 (테마명 + 공포도 점수)':'순위 목록 (테마명 + 한줄 코멘트)';
+  renderRankItems();
+  document.getElementById('rank-modal-bg').style.display='flex';
 }
+window.onRankEditClick=function(e,id){e.stopPropagation();const r=rankCards.find(x=>x.id===id);if(!r)return;showPwModal(id,()=>openEditRankModal(id),r.nick);}
+function openEditRankModal(id){
+  const r=rankCards.find(x=>x.id===id);if(!r)return;editRankId=id;
+  document.getElementById('rank-modal-title').textContent='랭킹 수정';document.getElementById('rank-btn-delete').style.display='';
+  document.getElementById('r-nick').value=r.nick||'';document.getElementById('r-pw').value='';document.getElementById('r-title').value=r.title||'';
+  rankItemsData=[...(r.items||[{theme:'',score:'',comment:''}])];
+  document.getElementById('r-items-label').textContent=r.type==='horror'?'순위 목록 (테마명 + 공포도 점수)':'순위 목록 (테마명 + 한줄 코멘트)';
+  renderRankItems();document.getElementById('rank-modal-bg').style.display='flex';
+}
+function renderRankItems(){
+  const container=document.getElementById('rank-items-list');
+  const isHorror=rankInnerTab==='horror'||(editRankId&&rankCards.find(x=>x.id===editRankId)?.type==='horror');
+  container.innerHTML=rankItemsData.map((item,i)=>`
+    <div class="rank-item-row">
+      <span class="rank-item-num">${i<3?MEDALS[i]:(i+1)+'위'}</span>
+      <input class="form-input rank-item-theme" placeholder="테마명" value="${item.theme||''}" oninput="rankItemsData[${i}].theme=this.value">
+      ${isHorror?`<input class="form-input rank-item-score" placeholder="점수" type="number" min="1" max="5" value="${item.score||''}" oninput="rankItemsData[${i}].score=this.value">`:`<input class="form-input rank-item-comment" placeholder="한줄 코멘트" value="${item.comment||''}" oninput="rankItemsData[${i}].comment=this.value">`}
+      ${i>0?`<button class="rank-item-del" onclick="removeRankItem(${i})">✕</button>`:'<span style="width:22px"></span>'}
+    </div>`).join('');
+}
+window.addRankItem=function(){rankItemsData.push({theme:'',score:'',comment:''});renderRankItems();}
+window.removeRankItem=function(i){rankItemsData.splice(i,1);renderRankItems();}
+window.closeRankModal=function(){document.getElementById('rank-modal-bg').style.display='none';}
+window.handleRankBgClick=function(e){if(e.target===document.getElementById('rank-modal-bg'))closeRankModal();}
+window.saveRankCard=async function(){
+  const nick=document.getElementById('r-nick').value.trim(),pw=document.getElementById('r-pw').value,title=document.getElementById('r-title').value.trim();
+  if(!nick){alert('닉네임을 입력해주세요');return;}if(!pw&&!editRankId){alert('비밀번호를 입력해주세요');return;}if(!title){alert('제목을 입력해주세요');return;}
+  const validItems=rankItemsData.filter(item=>item.theme.trim());
+  if(!validItems.length){alert('순위 항목을 하나 이상 입력해주세요');return;}
+  const r={nick,title,items:validItems,type:rankInnerTab,date:new Date().toLocaleDateString('ko-KR'),updatedAt:Date.now()};
+  if(pw)r.pwHash=await hashPw(pw);
+  try{if(editRankId){const ex=rankCards.find(x=>x.id===editRankId);if(ex&&!pw)r.pwHash=ex.pwHash;r.createdAt=ex?ex.createdAt:Date.now();r.type=ex?ex.type:rankInnerTab;await setDoc(doc(db,'rankCards',editRankId),r);}else{r.createdAt=Date.now();await addDoc(collection(db,'rankCards'),r);}closeRankModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
+}
+window.deleteRankCard=async function(){if(!confirm('이 랭킹을 삭제할까요?'))return;try{await deleteDoc(doc(db,'rankCards',editRankId));closeRankModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');}}
 
 // 자유게시판 CRUD
-window.openPostModal=function(){
-  editPostId=null;
-  document.getElementById('post-modal-title').textContent='새 글 쓰기';
-  document.getElementById('post-btn-delete').style.display='none';
-  document.getElementById('p-nick').value='';document.getElementById('p-pw').value='';
-  document.getElementById('p-title').value='';document.getElementById('p-content').value='';
-  document.getElementById('post-modal-bg').style.display='flex';
-}
-function openEditPostModal(id){
-  const p=posts.find(x=>x.id===id);if(!p)return;
-  editPostId=id;
-  document.getElementById('post-modal-title').textContent='글 수정';
-  document.getElementById('post-btn-delete').style.display='';
-  document.getElementById('p-nick').value=p.nick||'';document.getElementById('p-pw').value='';
-  document.getElementById('p-title').value=p.title||'';document.getElementById('p-content').value=p.content||'';
-  document.getElementById('post-modal-bg').style.display='flex';
-}
+window.openPostModal=function(){editPostId=null;document.getElementById('post-modal-title').textContent='새 글 쓰기';document.getElementById('post-btn-delete').style.display='none';document.getElementById('p-nick').value='';document.getElementById('p-pw').value='';document.getElementById('p-title').value='';document.getElementById('p-content').value='';document.getElementById('post-modal-bg').style.display='flex';}
+window.onPostEditClick=function(e,id){e.stopPropagation();const p=posts.find(x=>x.id===id);if(!p)return;showPwModal(id,()=>openEditPostModal(id),p.nick);}
+function openEditPostModal(id){const p=posts.find(x=>x.id===id);if(!p)return;editPostId=id;document.getElementById('post-modal-title').textContent='글 수정';document.getElementById('post-btn-delete').style.display='';document.getElementById('p-nick').value=p.nick||'';document.getElementById('p-pw').value='';document.getElementById('p-title').value=p.title||'';document.getElementById('p-content').value=p.content||'';document.getElementById('post-modal-bg').style.display='flex';}
 window.closePostModal=function(){document.getElementById('post-modal-bg').style.display='none';}
 window.handlePostBgClick=function(e){if(e.target===document.getElementById('post-modal-bg'))closePostModal();}
 window.savePost=async function(){
-  const nick=document.getElementById('p-nick').value.trim();
-  const pw=document.getElementById('p-pw').value;
-  const title=document.getElementById('p-title').value.trim();
-  const content=document.getElementById('p-content').value.trim();
-  if(!nick){alert('닉네임을 입력해주세요');return;}
-  if(!pw&&!editPostId){alert('비밀번호를 입력해주세요');return;}
-  if(!title){alert('제목을 입력해주세요');return;}
-  if(!content){alert('내용을 입력해주세요');return;}
-  const p={nick,title,content,date:new Date().toLocaleDateString('ko-KR'),updatedAt:Date.now()};
-  if(pw)p.pwHash=await hashPw(pw);
-  try{
-    if(editPostId){const existing=posts.find(x=>x.id===editPostId);if(existing&&!pw)p.pwHash=existing.pwHash;p.createdAt=existing?existing.createdAt:Date.now();await setDoc(doc(db,'posts',editPostId),p);}
-    else{p.createdAt=Date.now();await addDoc(collection(db,'posts'),p);}
-    closePostModal();showToast('저장됐어요 ✅');
-  }catch(e){alert('저장 중 오류');console.error(e);}
+  const nick=document.getElementById('p-nick').value.trim(),pw=document.getElementById('p-pw').value,title=document.getElementById('p-title').value.trim(),content=document.getElementById('p-content').value.trim();
+  if(!nick){alert('닉네임을 입력해주세요');return;}if(!pw&&!editPostId){alert('비밀번호를 입력해주세요');return;}if(!title){alert('제목을 입력해주세요');return;}if(!content){alert('내용을 입력해주세요');return;}
+  const p={nick,title,content,date:new Date().toLocaleDateString('ko-KR'),updatedAt:Date.now()};if(pw)p.pwHash=await hashPw(pw);
+  try{if(editPostId){const ex=posts.find(x=>x.id===editPostId);if(ex&&!pw)p.pwHash=ex.pwHash;p.createdAt=ex?ex.createdAt:Date.now();await setDoc(doc(db,'posts',editPostId),p);}else{p.createdAt=Date.now();await addDoc(collection(db,'posts'),p);}closePostModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
 }
-window.deletePost=async function(){
-  if(!confirm('이 글을 삭제할까요?'))return;
-  try{await deleteDoc(doc(db,'posts',editPostId));closePostModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');console.error(e);}
-}
+window.deletePost=async function(){if(!confirm('이 글을 삭제할까요?'))return;try{await deleteDoc(doc(db,'posts',editPostId));closePostModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');}}
 
 // 폼 헬퍼
 window.toggleResult=function(v){setResultUI(v);}
@@ -742,11 +724,7 @@ async function migrateData(){
     {id:"5b1eqjgf4yzqgiu81wpk",actor:"y",createdAt:1790775492567,date:"2026-09-09",diff:1,genre:"공포",hint:"",horror:3,memo:"첫 공테로 추천하는 테마\n진짜 서양 집에 와 있는 거 같은 인테리어\n연출이 더 많고, 문제가 좀만 더 난이도가 있었으면 좋았을 거 같음 ~",nick:"정원",party:"3",pwHash:"df805239a17c4c49d0851f3a0c6fc3225b76f6bbbe5b8bc7cb1f12bc9965f78c",rating:"풀꽃길",rec:"rec",result:"success",shop:"오늘의 한 페이지",theme:"버디",updatedAt:1790776315130},
     {id:"9brudd67kyd7bqoaqz1e",actor:"y",createdAt:1790775351760,date:"2026-09-24",diff:2,genre:"공포",hint:"2",horror:4,memo:"창공 + 조명 + 직원 연출에 약한 사람이라면 기절 쌉가능",nick:"정원",party:"2",pwHash:"df805239a17c4c49d0851f3a0c6fc3225b76f6bbbe5b8bc7cb1f12bc9965f78c",rating:"풀꽃길",rec:"rec",result:"success",shop:"후즈데어",theme:"아야코",updatedAt:1790776304922}
   ];
-  try{
-    for(const r of initData){const {id,...data}=r;await setDoc(doc(db,'records',id),data);}
-    localStorage.setItem('pricey_migrated','1');
-    showToast('기존 데이터 가져왔어요 ✅');
-  }catch(e){console.error('마이그레이션 실패',e);}
+  try{for(const r of initData){const {id,...data}=r;await setDoc(doc(db,'records',id),data);}localStorage.setItem('pricey_migrated','1');showToast('기존 데이터 가져왔어요 ✅');}catch(e){console.error('마이그레이션 실패',e);}
 }
 migrateData();
 </script>
