@@ -153,7 +153,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .btn-delete{background:#fce8e8;color:#c0392b;border:none;border-radius:10px;padding:0.7rem 0.9rem;font-size:0.88rem;cursor:pointer;font-family:inherit;}
 
 /* 랭킹 작성 모달 전용 */
-.rank-items-list{display:flex;flex-direction:column;gap:8px;margin-bottom:0.75rem;}
+.rank-item-handle{color:#ccc;cursor:grab;font-size:1rem;padding:0 4px;user-select:none;touch-action:none;}
+.rank-item-handle:active{cursor:grabbing;}
+.rank-item-row.dragging{opacity:0.4;}
+.rank-item-row.drag-over{border-top:2px solid #1a1a1a;}
 .rank-item-row{display:flex;align-items:center;gap:8px;}
 .rank-item-num{font-size:0.85rem;font-weight:700;color:#bbb;min-width:22px;}
 .rank-item-theme{flex:1;}
@@ -681,12 +684,39 @@ function addRankItemRow(item,i){
   const isHorror=isHorrorMode();
   const row=document.createElement('div');
   row.className='rank-item-row';
+  row.draggable=true;
   row.dataset.idx=i;
   row.innerHTML=`
+    <span class="rank-item-handle" title="드래그해서 순서 변경">☰</span>
     <span class="rank-item-num">${i<3?MEDALS[i]:(i+1)+'위'}</span>
     <input class="form-input rank-item-theme" placeholder="테마명" value="${item.theme||''}">
     ${isHorror?`<input class="form-input rank-item-score" placeholder="점수" type="number" min="1" max="5" value="${item.score||''}">`:`<input class="form-input rank-item-comment" placeholder="한줄 코멘트" value="${item.comment||''}">`}
     <button class="rank-item-del" onclick="removeRankItem(this)">✕</button>`;
+
+  row.addEventListener('dragstart',e=>{
+    syncRankItemsFromDOM();
+    row.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';
+    e.dataTransfer.setData('text/plain',row.dataset.idx);
+  });
+  row.addEventListener('dragend',()=>{ 
+    row.classList.remove('dragging');
+    document.querySelectorAll('.rank-item-row').forEach(r=>r.classList.remove('drag-over'));
+  });
+  row.addEventListener('dragover',e=>{
+    e.preventDefault();
+    document.querySelectorAll('.rank-item-row').forEach(r=>r.classList.remove('drag-over'));
+    row.classList.add('drag-over');
+  });
+  row.addEventListener('drop',e=>{
+    e.preventDefault();
+    const fromIdx=parseInt(e.dataTransfer.getData('text/plain'));
+    const toIdx=[...document.querySelectorAll('#rank-items-list .rank-item-row')].indexOf(row);
+    if(fromIdx===toIdx)return;
+    const moved=rankItemsData.splice(fromIdx,1)[0];
+    rankItemsData.splice(toIdx,0,moved);
+    renderRankItems();
+  });
   container.appendChild(row);
 }
 function renderRankItems(){
