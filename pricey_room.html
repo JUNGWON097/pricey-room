@@ -662,26 +662,59 @@ function openEditRankModal(id){
   document.getElementById('r-items-label').textContent=r.type==='horror'?'순위 목록 (테마명 + 공포도 점수)':'순위 목록 (테마명 + 한줄 코멘트)';
   renderRankItems();document.getElementById('rank-modal-bg').style.display='flex';
 }
+function isHorrorMode(){return rankInnerTab==='horror'||(editRankId&&rankCards.find(x=>x.id===editRankId)?.type==='horror');}
+function syncRankItemsFromDOM(){
+  const rows=document.querySelectorAll('#rank-items-list .rank-item-row');
+  rows.forEach((row,i)=>{
+    const theme=row.querySelector('.rank-item-theme');
+    const score=row.querySelector('.rank-item-score');
+    const comment=row.querySelector('.rank-item-comment');
+    if(!rankItemsData[i])rankItemsData[i]={theme:'',score:'',comment:''};
+    if(theme)rankItemsData[i].theme=theme.value;
+    if(score)rankItemsData[i].score=score.value;
+    if(comment)rankItemsData[i].comment=comment.value;
+  });
+}
+function addRankItemRow(item,i){
+  const container=document.getElementById('rank-items-list');
+  const isHorror=isHorrorMode();
+  const row=document.createElement('div');
+  row.className='rank-item-row';
+  row.dataset.idx=i;
+  row.innerHTML=`
+    <span class="rank-item-num">${i<3?MEDALS[i]:(i+1)+'위'}</span>
+    <input class="form-input rank-item-theme" placeholder="테마명" value="${item.theme||''}">
+    ${isHorror?`<input class="form-input rank-item-score" placeholder="점수" type="number" min="1" max="5" value="${item.score||''}">`:`<input class="form-input rank-item-comment" placeholder="한줄 코멘트" value="${item.comment||''}">`}
+    <button class="rank-item-del" onclick="removeRankItem(this)">✕</button>`;
+  container.appendChild(row);
+}
 function renderRankItems(){
   const container=document.getElementById('rank-items-list');
-  const isHorror=rankInnerTab==='horror'||(editRankId&&rankCards.find(x=>x.id===editRankId)?.type==='horror');
-  container.innerHTML=rankItemsData.map((item,i)=>`
-    <div class="rank-item-row">
-      <span class="rank-item-num">${i<3?MEDALS[i]:(i+1)+'위'}</span>
-      <input class="form-input rank-item-theme" placeholder="테마명" value="${item.theme||''}" oninput="rankItemsData[${i}].theme=this.value">
-      ${isHorror?`<input class="form-input rank-item-score" placeholder="점수" type="number" min="1" max="5" value="${item.score||''}" oninput="rankItemsData[${i}].score=this.value">`:`<input class="form-input rank-item-comment" placeholder="한줄 코멘트" value="${item.comment||''}" oninput="rankItemsData[${i}].comment=this.value">`}
-      ${i>0?`<button class="rank-item-del" onclick="removeRankItem(${i})">✕</button>`:'<span style="width:22px"></span>'}
-    </div>`).join('');
+  container.innerHTML='';
+  rankItemsData.forEach((item,i)=>addRankItemRow(item,i));
 }
-window.addRankItem=function(){rankItemsData.push({theme:'',score:'',comment:''});renderRankItems();}
-window.removeRankItem=function(i){rankItemsData.splice(i,1);renderRankItems();}
+window.addRankItem=function(){
+  syncRankItemsFromDOM();
+  rankItemsData.push({theme:'',score:'',comment:''});
+  const i=rankItemsData.length-1;
+  addRankItemRow(rankItemsData[i],i);
+}
+window.removeRankItem=function(btn){
+  syncRankItemsFromDOM();
+  const rows=[...document.querySelectorAll('#rank-items-list .rank-item-row')];
+  const i=rows.indexOf(btn.closest('.rank-item-row'));
+  if(i<0)return;
+  rankItemsData.splice(i,1);
+  renderRankItems();
+}
 window.closeRankModal=function(){document.getElementById('rank-modal-bg').style.display='none';}
 window.handleRankBgClick=function(e){if(e.target===document.getElementById('rank-modal-bg'))closeRankModal();}
 window.saveRankCard=async function(){
+  syncRankItemsFromDOM();
   const nick=document.getElementById('r-nick').value.trim(),pw=document.getElementById('r-pw').value,title=document.getElementById('r-title').value.trim();
   if(!nick){alert('닉네임을 입력해주세요');return;}if(!pw&&!editRankId){alert('비밀번호를 입력해주세요');return;}if(!title){alert('제목을 입력해주세요');return;}
-  const validItems=rankItemsData.filter(item=>item.theme.trim());
-  if(!validItems.length){alert('순위 항목을 하나 이상 입력해주세요');return;}
+  const validItems=rankItemsData.filter(item=>(item.theme||'').trim());
+  if(!validItems.length){alert('테마명을 하나 이상 입력해주세요');return;}
   const r={nick,title,items:validItems,type:rankInnerTab,date:new Date().toLocaleDateString('ko-KR'),updatedAt:Date.now()};
   if(pw)r.pwHash=await hashPw(pw);
   try{if(editRankId){const ex=rankCards.find(x=>x.id===editRankId);if(ex&&!pw)r.pwHash=ex.pwHash;r.createdAt=ex?ex.createdAt:Date.now();r.type=ex?ex.type:rankInnerTab;await setDoc(doc(db,'rankCards',editRankId),r);}else{r.createdAt=Date.now();await addDoc(collection(db,'rankCards'),r);}closeRankModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
