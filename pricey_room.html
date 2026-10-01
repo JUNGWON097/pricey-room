@@ -516,6 +516,7 @@ window.renderRankCards=function(){
     const isOpen=openDetailId==='rank-'+rc.id;
     const items=rc.items||[];
     const top3=items.slice(0,3);
+    const hasMore=items.length>3;
     const cmts=(comments[rc.id]||[]).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
     return`<div class="rank-list-card">
       <div class="rank-list-header" onclick="toggleDetail('rank-${rc.id}')">
@@ -530,16 +531,16 @@ window.renderRankCards=function(){
         </div>
         <div class="rank-preview">
           ${top3.map((item,i)=>`<div class="rank-preview-item"><span class="medal">${MEDALS[i]||''}</span><span class="rank-preview-theme">${item.theme||''}</span>${rankInnerTab==='horror'&&item.score?`<span style="font-size:0.72rem;color:#c0392b;margin-left:auto">👻 ${item.score}</span>`:''}${rankInnerTab==='life'&&item.comment?`<span class="rank-preview-comment">${item.comment}</span>`:''}</div>`).join('')}
-          ${items.length>3?`<div style="font-size:0.72rem;color:#bbb;padding-left:28px">+${items.length-3}개 더보기</div>`:''}
+          ${hasMore?`<div style="font-size:0.72rem;color:#bbb;padding-left:28px">+${items.length-3}개 더보기</div>`:''}
         </div>
       </div>
-      <div class="rank-full ${isOpen?'open':''}" id="rankfull-${rc.id}">
+      ${hasMore?`<div class="rank-full ${isOpen?'open':''}" id="rankfull-${rc.id}">
         ${items.map((item,i)=>`<div class="rank-full-item">
           <div class="rank-num-badge">${i<3?MEDALS[i]:(i+1)+'위'}</div>
           <div class="rank-full-info"><div class="rank-full-theme">${item.theme||''}</div>${item.comment?`<div class="rank-full-comment">${item.comment}</div>`:''}</div>
           ${rankInnerTab==='horror'&&item.score?`<div class="rank-full-score">👻 ${item.score}</div>`:''}
         </div>`).join('')}
-      </div>
+      </div>`:''}
       ${isOpen?`<div class="comment-section">
         ${cmts.length?`<div class="comment-list">${cmts.map(c=>`<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}</span></div><div class="comment-text">${c.text}</div></div>`).join('')}</div>`:''}
         <div class="comment-input-row"><input class="comment-input" id="ci-rank-${rc.id}" placeholder="댓글을 남겨요..."><button class="comment-submit" onclick="submitComment('${rc.id}','ci-rank-${rc.id}')">등록</button></div>
