@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="갇힘일지">
+<meta name="theme-color" content="#1a1a1a">
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;갇힘일지&quot;,&quot;short_name&quot;:&quot;갇힘일지&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%23f7f5f0&quot;,&quot;theme_color&quot;:&quot;%231a1a1a&quot;}">
+<title>갇힘일지 🔐</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;background:#f7f5f0;color:#1a1a1a;min-height:100vh;}
+
+.header{background:#fff;border-bottom:1px solid #e8e4dc;padding:1.1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+.header-left h1{font-size:1.05rem;font-weight:600;letter-spacing:-0.02em;}
+.header-left p{font-size:0.72rem;color:#999;margin-top:2px;}
+.add-btn{background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:0.45rem 0.9rem;font-size:0.82rem;cursor:pointer;font-family:inherit;}
+.add-btn:hover{opacity:0.8;}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:1rem 1.25rem;}
+.stat-card{background:#fff;border-radius:10px;padding:0.75rem;text-align:center;border:1px solid #e8e4dc;}
+.stat-num{font-size:1.3rem;font-weight:700;}
+.stat-label{font-size:0.68rem;color:#999;margin-top:2px;}
+
+.controls-bar{padding:0 1.25rem 0.9rem;display:flex;align-items:center;gap:6px;}
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;flex:1;}
+.filter-btn{background:#fff;border:1px solid #e0ddd6;border-radius:20px;padding:0.3rem 0.75rem;font-size:0.75rem;cursor:pointer;font-family:inherit;color:#555;}
+.filter-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
+.sort-select{border:1px solid #e0ddd6;border-radius:8px;padding:0.3rem 0.6rem;font-size:0.75rem;font-family:inherit;color:#555;background:#fff;cursor:pointer;outline:none;flex-shrink:0;}
+
+.records{padding:0 1.25rem 6rem;display:flex;flex-direction:column;gap:9px;}
+.record-card{background:#fff;border-radius:12px;border:1px solid #e8e4dc;overflow:hidden;}
+.record-card-header{padding:0.9rem 1rem 0.55rem;cursor:pointer;}
+.record-card-header:hover{background:#fdfcfb;}
+.record-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.55rem;}
+.record-theme{font-size:0.93rem;font-weight:600;}
+.record-shop{font-size:0.75rem;color:#888;margin-top:1px;}
+.record-nick{font-size:0.68rem;color:#bbb;margin-top:2px;}
+.record-top-right{display:flex;align-items:flex-start;gap:6px;}
+.rating-badge{font-size:0.7rem;padding:0.22rem 0.55rem;border-radius:20px;white-space:nowrap;font-weight:500;}
+.kebab-btn{background:none;border:none;cursor:pointer;color:#bbb;font-size:1.1rem;padding:0 2px;line-height:1;position:relative;}
+.kebab-btn:hover{color:#555;}
+.kebab-menu{position:absolute;right:0;top:100%;background:#fff;border:1px solid #e8e4dc;border-radius:8px;min-width:100px;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:50;overflow:hidden;}
+.kebab-item{display:block;width:100%;padding:0.6rem 0.9rem;font-size:0.82rem;font-family:inherit;background:none;border:none;text-align:left;cursor:pointer;color:#1a1a1a;}
+.kebab-item:hover{background:#f7f5f0;}
+.record-meta{display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:0 1rem 0.9rem;}
+.tag{font-size:0.7rem;padding:0.18rem 0.5rem;border-radius:12px;background:#f5f3ef;color:#666;}
+.tag.success{background:#e8f5e8;color:#2d7a2d;}
+.tag.fail{background:#fce8e8;color:#c0392b;}
+.tag.rec{background:#e8eefa;color:#2d5fa0;}
+.tag.norec{background:#fef3e2;color:#a06c2d;}
+.record-date{font-size:0.68rem;color:#ccc;margin-left:auto;}
+
+.detail-body{border-top:1px solid #f0ede8;padding:0.85rem 1rem;display:none;flex-direction:column;gap:0.6rem;}
+.detail-body.open{display:flex;}
+.detail-row{display:flex;align-items:flex-start;gap:0.5rem;}
+.detail-label{font-size:0.72rem;color:#aaa;min-width:68px;padding-top:1px;}
+.detail-val{font-size:0.82rem;color:#333;line-height:1.5;}
+.stars{color:#e8a020;font-size:0.82rem;letter-spacing:1px;}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.42);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:1.4rem 1.25rem;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;}
+.modal-title{font-size:0.98rem;font-weight:600;margin-bottom:1.1rem;}
+.form-row{margin-bottom:0.9rem;}
+.form-label{font-size:0.75rem;color:#666;margin-bottom:0.3rem;display:block;font-weight:500;}
+.form-input{width:100%;border:1px solid #ddd;border-radius:8px;padding:0.55rem 0.75rem;font-size:0.85rem;font-family:inherit;outline:none;}
+.form-input:focus{border-color:#1a1a1a;}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:0.9rem;}
+
+.rating-selector{display:flex;flex-direction:column;gap:5px;}
+.rating-option{display:flex;align-items:center;gap:8px;padding:0.45rem 0.7rem;border:1px solid #e0ddd6;border-radius:8px;cursor:pointer;}
+.rating-option:hover{border-color:#999;}
+.rating-option.selected{border-color:#1a1a1a;background:#f7f5f0;}
+.rating-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.rating-name{font-size:0.82rem;font-weight:500;}
+.rating-desc{font-size:0.7rem;color:#bbb;margin-left:auto;}
+
+.toggle-group{display:flex;gap:6px;}
+.toggle-btn{flex:1;padding:0.45rem;border:1px solid #e0ddd6;border-radius:8px;background:#fff;font-family:inherit;font-size:0.8rem;cursor:pointer;text-align:center;}
+.toggle-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
+.num-group{display:flex;gap:5px;}
+.num-btn{width:36px;height:36px;border:1px solid #e0ddd6;border-radius:8px;background:#fff;font-family:inherit;font-size:0.85rem;cursor:pointer;text-align:center;font-weight:500;}
+.num-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
+
+.form-btns{display:flex;gap:7px;margin-top:1.1rem;}
+.btn-save{flex:1;background:#1a1a1a;color:#fff;border:none;border-radius:10px;padding:0.7rem;font-size:0.88rem;cursor:pointer;font-family:inherit;}
+.btn-save:hover{opacity:0.85;}
+.btn-cancel{background:#f0ede8;color:#555;border:none;border-radius:10px;padding:0.7rem 1rem;font-size:0.88rem;cursor:pointer;font-family:inherit;}
+.btn-delete{background:#fce8e8;color:#c0392b;border:none;border-radius:10px;padding:0.7rem 0.9rem;font-size:0.88rem;cursor:pointer;font-family:inherit;}
+
+.pw-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.42);z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.pw-modal{background:#fff;border-radius:16px;padding:1.5rem 1.25rem;width:100%;max-width:340px;}
+.pw-modal h2{font-size:0.95rem;font-weight:600;margin-bottom:0.3rem;}
+.pw-modal p{font-size:0.78rem;color:#888;margin-bottom:1rem;}
+.pw-err{font-size:0.75rem;color:#c0392b;margin-top:0.4rem;display:none;}
+
+.empty{text-align:center;padding:3.5rem 2rem;color:#ccc;}
+.empty-icon{font-size:2.2rem;margin-bottom:0.6rem;}
+.empty p{font-size:0.88rem;}
+.loading{text-align:center;padding:3rem;color:#bbb;font-size:0.88rem;}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:0.6rem 1.2rem;border-radius:20px;font-size:0.82rem;z-index:400;opacity:0;transition:opacity 0.3s;}
+.toast.show{opacity:1;}
+
+@media(max-width:400px){.stats{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>🔐 갇힘일지</h1>
+    <p id="total-sub">불러오는 중...</p>
+  </div>
+  <button class="add-btn" onclick="openAddModal()">+ 기록 추가</button>
+</div>
+
+<div class="stats">
+  <div class="stat-card"><div class="stat-num" id="s-total">-</div><div class="stat-label">총 테마</div></div>
+  <div class="stat-card"><div class="stat-num" id="s-success">-</div><div class="stat-label">탈출 성공</div></div>
+  <div class="stat-card"><div class="stat-num" id="s-rec">-</div><div class="stat-label">추천</div></div>
+  <div class="stat-card"><div class="stat-num" id="s-life">-</div><div class="stat-label">인생 테마</div></div>
+</div>
+
+<div class="controls-bar">
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="setFilter('all',this)">전체</button>
+    <button class="filter-btn" onclick="setFilter('success',this)">탈출 성공</button>
+    <button class="filter-btn" onclick="setFilter('fail',this)">실패</button>
+    <button class="filter-btn" onclick="setFilter('rec',this)">추천</button>
+    <button class="filter-btn" onclick="setFilter('life',this)">인생 테마</button>
+  </div>
+  <select class="sort-select" id="sort-select" onchange="renderAll()">
+    <option value="reg-desc">등록 최신순</option>
+    <option value="reg-asc">등록 오래된순</option>
+    <option value="play-desc">플레이 최신순</option>
+    <option value="play-asc">플레이 오래된순</option>
+  </select>
+</div>
+
+<div class="records" id="records-list"><div class="loading">불러오는 중...</div></div>
+<div class="toast" id="toast"></div>
+
+<div class="modal-bg" id="modal-bg" style="display:none" onclick="handleBgClick(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">새 기록 추가</div>
+    <div class="form-row-2">
+      <div><label class="form-label">닉네임 *</label><input class="form-input" id="f-nick" placeholder="예: 정원"></div>
+      <div><label class="form-label">비밀번호 *</label><input class="form-input" id="f-pw" type="password" placeholder="수정 시 필요해요"></div>
+    </div>
+    <div class="form-row"><label class="form-label">테마명 *</label><input class="form-input" id="f-theme" placeholder="예: 괴록"></div>
+    <div class="form-row-2">
+      <div><label class="form-label">매장명</label><input class="form-input" id="f-shop" placeholder="예: 후즈데어"></div>
+      <div><label class="form-label">플레이 날짜</label><input class="form-input" id="f-date" type="date"></div>
+    </div>
+    <div class="form-row-2">
+      <div><label class="form-label">인원</label><input class="form-input" id="f-party" type="number" min="1" max="20" placeholder="명"></div>
+      <div><label class="form-label">힌트 횟수</label><input class="form-input" id="f-hint" type="number" min="0" placeholder="0"></div>
+    </div>
+    <div class="form-row"><label class="form-label">장르</label><input class="form-input" id="f-genre" placeholder="예: 공포, 추리, 드라마"></div>
+    <div class="form-row">
+      <label class="form-label">문제 난이도</label>
+      <div class="num-group">
+        <button class="num-btn" id="d-1" onclick="toggleDiff(1)">1</button>
+        <button class="num-btn" id="d-2" onclick="toggleDiff(2)">2</button>
+        <button class="num-btn" id="d-3" onclick="toggleDiff(3)">3</button>
+        <button class="num-btn" id="d-4" onclick="toggleDiff(4)">4</button>
+        <button class="num-btn" id="d-5" onclick="toggleDiff(5)">5</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">공포도</label>
+      <div class="num-group">
+        <button class="num-btn" id="h-1" onclick="toggleHorror(1)">1</button>
+        <button class="num-btn" id="h-2" onclick="toggleHorror(2)">2</button>
+        <button class="num-btn" id="h-3" onclick="toggleHorror(3)">3</button>
+        <button class="num-btn" id="h-4" onclick="toggleHorror(4)">4</button>
+        <button class="num-btn" id="h-5" onclick="toggleHorror(5)">5</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">직원 연출</label>
+      <div class="toggle-group">
+        <button class="toggle-btn" id="a-y" onclick="toggleActor('y')">👤 있음</button>
+        <button class="toggle-btn" id="a-n" onclick="toggleActor('n')">없음</button>
+        <button class="toggle-btn active" id="a-none" onclick="toggleActor('')">선택 안 함</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">성공 여부</label>
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="t-success" onclick="toggleResult('success')">🎉 탈출 성공</button>
+        <button class="toggle-btn" id="t-fail" onclick="toggleResult('fail')">💀 실패</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">추천 여부</label>
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="t-rec" onclick="toggleRec('rec')">👍 추천</button>
+        <button class="toggle-btn" id="t-norec" onclick="toggleRec('norec')">👎 비추천</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">평점</label>
+      <div class="rating-selector">
+        <label class="rating-option" onclick="selectRating('흙길')"><div class="rating-dot" style="background:#c8a97e"></div><span class="rating-name">흙길</span><span class="rating-desc">아쉬웠어요</span></label>
+        <label class="rating-option" onclick="selectRating('풀길')"><div class="rating-dot" style="background:#8abf7a"></div><span class="rating-name">풀길</span><span class="rating-desc">괜찮았어요</span></label>
+        <label class="rating-option" onclick="selectRating('풀꽃길')"><div class="rating-dot" style="background:#6aab97"></div><span class="rating-name">풀꽃길</span><span class="rating-desc">좋았어요</span></label>
+        <label class="rating-option" onclick="selectRating('꽃길')"><div class="rating-dot" style="background:#e895a0"></div><span class="rating-name">꽃길</span><span class="rating-desc">아주 좋았어요</span></label>
+        <label class="rating-option" onclick="selectRating('꽃밭길')"><div class="rating-dot" style="background:#d46fa0"></div><span class="rating-name">꽃밭길</span><span class="rating-desc">최고였어요</span></label>
+        <label class="rating-option selected" onclick="selectRating('인생 테마')"><div class="rating-dot" style="background:#8b6bbf"></div><span class="rating-name">인생 테마</span><span class="rating-desc">✨ 잊을 수 없어요</span></label>
+      </div>
+    </div>
+    <div class="form-row"><label class="form-label">메모</label><textarea class="form-input" id="f-memo" rows="3" placeholder="기억하고 싶은 것들을 자유롭게 남겨요"></textarea></div>
+    <div class="form-btns">
+      <button class="btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-delete" id="btn-delete" style="display:none" onclick="deleteRecord()">삭제</button>
+      <button class="btn-save" onclick="saveRecord()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="pw-modal-bg" id="pw-modal-bg" style="display:none">
+  <div class="pw-modal">
+    <h2>비밀번호 확인</h2>
+    <p id="pw-modal-desc">수정하려면 비밀번호를 입력하세요</p>
+    <input class="form-input" id="pw-input" type="password" placeholder="비밀번호">
+    <div class="pw-err" id="pw-err">비밀번호가 맞지 않아요</div>
+    <div class="form-btns" style="margin-top:1rem">
+      <button class="btn-cancel" onclick="closePwModal()">취소</button>
+      <button class="btn-save" onclick="confirmPw()">확인</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, setDoc, deleteDoc, doc, onSnapshot, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAidrKvznTQ5BO85jNZ4FsQZ7QYUy3jUHw",
+  authDomain: "pricey-room.firebaseapp.com",
+  projectId: "pricey-room",
+  storageBucket: "pricey-room.firebasestorage.app",
+  messagingSenderId: "675654767413",
+  appId: "1:675654767413:web:9284069211aa0d8a19727c"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const RATING_COLORS={'흙길':'#c8a97e','풀길':'#8abf7a','풀꽃길':'#6aab97','꽃길':'#e895a0','꽃밭길':'#d46fa0','인생 테마':'#8b6bbf'};
+const RATING_BG={'흙길':'#fdf5ec','풀길':'#eef7ea','풀꽃길':'#e8f6f3','꽃길':'#fdeef0','꽃밭길':'#f9eaf4','인생 테마':'#f2edfb'};
+
+let records=[], currentFilter='all', editId=null;
+let resultVal='success', recVal='rec', ratingVal='인생 테마';
+let diffVal=0, horrorVal=0, actorVal='';
+let pwCallback=null, pwTargetId=null, openDetailId=null;
+
+async function hashPw(pw){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+const q=query(collection(db,'records'));
+onSnapshot(q,snap=>{
+  records=snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderAll();
+  document.getElementById('total-sub').textContent='기록 '+records.length+'개';
+});
+
+function getSorted(list){
+  const sort=document.getElementById('sort-select').value;
+  return [...list].sort((a,b)=>{
+    if(sort==='reg-desc')return(b.createdAt||0)-(a.createdAt||0);
+    if(sort==='reg-asc')return(a.createdAt||0)-(b.createdAt||0);
+    if(sort==='play-desc')return(b.date||'').localeCompare(a.date||'');
+    if(sort==='play-asc')return(a.date||'').localeCompare(b.date||'');
+    return 0;
+  });
+}
+
+window.renderAll=function(){
+  let filtered=records;
+  if(currentFilter==='success')filtered=records.filter(r=>r.result==='success');
+  else if(currentFilter==='fail')filtered=records.filter(r=>r.result==='fail');
+  else if(currentFilter==='rec')filtered=records.filter(r=>r.rec==='rec');
+  else if(currentFilter==='life')filtered=records.filter(r=>r.rating==='인생 테마');
+  filtered=getSorted(filtered);
+
+  document.getElementById('s-total').textContent=records.length;
+  document.getElementById('s-success').textContent=records.filter(r=>r.result==='success').length;
+  document.getElementById('s-rec').textContent=records.filter(r=>r.rec==='rec').length;
+  document.getElementById('s-life').textContent=records.filter(r=>r.rating==='인생 테마').length;
+
+  const list=document.getElementById('records-list');
+  if(!filtered.length){
+    list.innerHTML='<div class="empty"><div class="empty-icon">🗝️</div><p>'+(currentFilter==='all'?'아직 기록이 없어요.<br>첫 방탈출 기록을 남겨보세요!':'해당하는 기록이 없어요.')+'</p></div>';
+    return;
+  }
+  const stars=n=>n?'★'.repeat(n)+'☆'.repeat(5-n):'-';
+  list.innerHTML=filtered.map(r=>{
+    const rc=RATING_COLORS[r.rating]||'#888';
+    const rb=RATING_BG[r.rating]||'#f5f3ef';
+    const isOpen=openDetailId===r.id;
+    return`<div class="record-card" id="card-${r.id}">
+      <div class="record-card-header" onclick="toggleDetail('${r.id}')">
+        <div class="record-top">
+          <div>
+            <div class="record-theme">${r.theme||''}</div>
+            ${r.shop?`<div class="record-shop">${r.shop}</div>`:''}
+            ${r.nick?`<div class="record-nick">by ${r.nick}</div>`:''}
+          </div>
+          <div class="record-top-right">
+            <span class="rating-badge" style="background:${rb};color:${rc}">${r.rating||''}</span>
+            <div style="position:relative">
+              <button class="kebab-btn" onclick="toggleKebab(event,'${r.id}')">⋯</button>
+              <div class="kebab-menu" id="kebab-${r.id}" style="display:none">
+                <button class="kebab-item" onclick="onEditClick(event,'${r.id}')">수정하기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="record-meta" style="padding:0 0 0.2rem">
+          <span class="tag ${r.result}">${r.result==='success'?'🎉 탈출 성공':'💀 실패'}</span>
+          <span class="tag ${r.rec}">${r.rec==='rec'?'👍 추천':'👎 비추천'}</span>
+          ${r.genre?`<span class="tag">${r.genre}</span>`:''}
+          ${r.date?`<span class="record-date">${r.date}</span>`:''}
+        </div>
+      </div>
+      <div class="detail-body ${isOpen?'open':''}" id="detail-${r.id}">
+        ${r.party?`<div class="detail-row"><span class="detail-label">인원</span><span class="detail-val">${r.party}명</span></div>`:''}
+        ${r.hint!==''&&r.hint!==undefined?`<div class="detail-row"><span class="detail-label">힌트</span><span class="detail-val">${r.hint}회</span></div>`:''}
+        ${r.diff?`<div class="detail-row"><span class="detail-label">문제 난이도</span><span class="detail-val stars">${stars(r.diff)}</span></div>`:''}
+        ${r.horror?`<div class="detail-row"><span class="detail-label">공포도</span><span class="detail-val stars">${stars(r.horror)}</span></div>`:''}
+        ${r.actor==='y'||r.actor==='n'?`<div class="detail-row"><span class="detail-label">직원 연출</span><span class="detail-val">${r.actor==='y'?'👤 있음':'없음'}</span></div>`:''}
+        ${r.memo?`<div class="detail-row"><span class="detail-label">메모</span><span class="detail-val">${r.memo}</span></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.toggleDetail=function(id){openDetailId=openDetailId===id?null:id;renderAll();}
+window.setFilter=function(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAll();}
+
+window.toggleKebab=function(e,id){
+  e.stopPropagation();
+  document.querySelectorAll('.kebab-menu').forEach(m=>{if(m.id!=='kebab-'+id)m.style.display='none';});
+  const m=document.getElementById('kebab-'+id);
+  m.style.display=m.style.display==='none'?'block':'none';
+}
+document.addEventListener('click',()=>document.querySelectorAll('.kebab-menu').forEach(m=>m.style.display='none'));
+
+window.onEditClick=function(e,id){
+  e.stopPropagation();
+  document.querySelectorAll('.kebab-menu').forEach(m=>m.style.display='none');
+  const r=records.find(x=>x.id===id);if(!r)return;
+  pwTargetId=id;pwCallback=()=>openEditModal(id);
+  document.getElementById('pw-modal-desc').textContent=`"${r.nick||'작성자'}"의 비밀번호를 입력하세요`;
+  document.getElementById('pw-input').value='';
+  document.getElementById('pw-err').style.display='none';
+  document.getElementById('pw-modal-bg').style.display='flex';
+}
+
+window.confirmPw=async function(){
+  const pw=document.getElementById('pw-input').value;
+  if(!pw){document.getElementById('pw-err').style.display='block';document.getElementById('pw-err').textContent='비밀번호를 입력해주세요';return;}
+  const hash=await hashPw(pw);
+  const r=records.find(x=>x.id===pwTargetId);
+  if(!r||r.pwHash!==hash){document.getElementById('pw-err').style.display='block';document.getElementById('pw-err').textContent='비밀번호가 맞지 않아요';return;}
+  const cb=pwCallback;closePwModal();setTimeout(cb,50);
+}
+window.closePwModal=function(){document.getElementById('pw-modal-bg').style.display='none';pwCallback=null;pwTargetId=null;}
+
+window.openAddModal=function(){
+  editId=null;
+  document.getElementById('modal-title').textContent='새 기록 추가';
+  document.getElementById('btn-delete').style.display='none';
+  document.getElementById('f-nick').value='';document.getElementById('f-pw').value='';
+  ['f-theme','f-shop','f-genre','f-memo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('f-party').value='';document.getElementById('f-hint').value='';
+  setResultUI('success');setRecUI('rec');selectRating('인생 테마');setDiffUI(0);setHorrorUI(0);setActorUI('');
+  document.getElementById('modal-bg').style.display='flex';
+}
+
+function openEditModal(id){
+  const r=records.find(x=>x.id===id);if(!r)return;
+  editId=id;
+  document.getElementById('modal-title').textContent='기록 수정';
+  document.getElementById('btn-delete').style.display='';
+  document.getElementById('f-nick').value=r.nick||'';document.getElementById('f-pw').value='';
+  document.getElementById('f-theme').value=r.theme||'';document.getElementById('f-shop').value=r.shop||'';
+  document.getElementById('f-date').value=r.date||'';document.getElementById('f-party').value=r.party||'';
+  document.getElementById('f-hint').value=r.hint!==undefined?r.hint:'';document.getElementById('f-genre').value=r.genre||'';
+  document.getElementById('f-memo').value=r.memo||'';
+  setResultUI(r.result||'success');setRecUI(r.rec||'rec');selectRating(r.rating||'인생 테마');
+  setDiffUI(r.diff||0);setHorrorUI(r.horror||0);setActorUI(r.actor);
+  document.getElementById('modal-bg').style.display='flex';
+}
+
+window.closeModal=function(){document.getElementById('modal-bg').style.display='none';}
+window.handleBgClick=function(e){if(e.target===document.getElementById('modal-bg'))closeModal();}
+window.toggleResult=function(v){setResultUI(v);}
+function setResultUI(v){resultVal=v;document.getElementById('t-success').classList.toggle('active',v==='success');document.getElementById('t-fail').classList.toggle('active',v==='fail');}
+window.toggleRec=function(v){setRecUI(v);}
+function setRecUI(v){recVal=v;document.getElementById('t-rec').classList.toggle('active',v==='rec');document.getElementById('t-norec').classList.toggle('active',v==='norec');}
+window.selectRating=function(val){ratingVal=val;document.querySelectorAll('.rating-option').forEach(el=>{el.classList.toggle('selected',el.querySelector('.rating-name').textContent===val);});}
+window.toggleDiff=function(v){diffVal=diffVal===v?0:v;setDiffUI(diffVal);}
+function setDiffUI(v){diffVal=v||0;for(let i=1;i<=5;i++)document.getElementById('d-'+i).classList.toggle('active',i<=diffVal&&diffVal>0);}
+window.toggleHorror=function(v){horrorVal=horrorVal===v?0:v;setHorrorUI(horrorVal);}
+function setHorrorUI(v){horrorVal=v||0;for(let i=1;i<=5;i++)document.getElementById('h-'+i).classList.toggle('active',i<=horrorVal&&horrorVal>0);}
+window.toggleActor=function(v){setActorUI(v);}
+function setActorUI(v){actorVal=v===undefined?'':v;['y','n',''].forEach(x=>document.getElementById('a-'+(x===''?'none':x)).classList.toggle('active',x===actorVal));}
+
+// 마이그레이션
+async function migrateData(){
+  const migrated=localStorage.getItem("pricey_migrated");
+  if(migrated)return;
+  const initData=[
+    {id:"5b1eqjgf4yzqgiu81wpk",actor:"y",createdAt:1790775492567,date:"2026-09-09",diff:1,genre:"공포",hint:"",horror:3,memo:"첫 공테로 추천하는 테마\n진짜 서양 집에 와 있는 거 같은 인테리어\n연출이 더 많고, 문제가 좀만 더 난이도가 있었으면 좋았을 거 같음 ~",nick:"정원",party:"3",pwHash:"df805239a17c4c49d0851f3a0c6fc3225b76f6bbbe5b8bc7cb1f12bc9965f78c",rating:"풀꽃길",rec:"rec",result:"success",shop:"오늘의 한 페이지",theme:"버디",updatedAt:1790776315130},
+    {id:"9brudd67kyd7bqoaqz1e",actor:"y",createdAt:1790775351760,date:"2026-09-24",diff:2,genre:"공포",hint:"2",horror:4,memo:"창공 + 조명 + 직원 연출에 약한 사람이라면 기절 쌉가능",nick:"정원",party:"2",pwHash:"df805239a17c4c49d0851f3a0c6fc3225b76f6bbbe5b8bc7cb1f12bc9965f78c",rating:"풀꽃길",rec:"rec",result:"success",shop:"후즈데어",theme:"아야코",updatedAt:1790776304922}
+  ];
+  try{
+    for(const r of initData){
+      const {id,...data}=r;
+      await setDoc(doc(db,"records",id),data);
+    }
+    localStorage.setItem("pricey_migrated","1");
+    showToast("기존 데이터 가져왔어요 ✅");
+  }catch(e){console.error("마이그레이션 실패",e);}
+}
+migrateData();
+
+window.saveRecord=async function(){
+  const nick=document.getElementById('f-nick').value.trim();
+  const pw=document.getElementById('f-pw').value;
+  const theme=document.getElementById('f-theme').value.trim();
+  if(!nick){alert('닉네임을 입력해주세요');return;}
+  if(!pw&&!editId){alert('비밀번호를 입력해주세요');return;}
+  if(!theme){alert('테마명을 입력해주세요');return;}
+  const r={nick,theme,shop:document.getElementById('f-shop').value.trim(),date:document.getElementById('f-date').value,party:document.getElementById('f-party').value,hint:document.getElementById('f-hint').value,genre:document.getElementById('f-genre').value.trim(),result:resultVal,rec:recVal,rating:ratingVal,diff:diffVal,horror:horrorVal,actor:actorVal,memo:document.getElementById('f-memo').value.trim(),updatedAt:Date.now()};
+  if(pw)r.pwHash=await hashPw(pw);
+  try{
+    if(editId){
+      const existing=records.find(x=>x.id===editId);
+      if(existing&&!pw)r.pwHash=existing.pwHash;
+      r.createdAt=existing?existing.createdAt:Date.now();
+      await setDoc(doc(db,'records',editId),r);
+    }else{
+      r.createdAt=Date.now();
+      await addDoc(collection(db,'records'),r);
+    }
+    closeModal();showToast('저장됐어요 ✅');
+  }catch(e){alert('저장 중 오류가 발생했어요');console.error(e);}
+}
+
+window.deleteRecord=async function(){
+  if(!confirm('이 기록을 삭제할까요?'))return;
+  try{
+    await deleteDoc(doc(db,'records',editId));
+    closeModal();showToast('삭제됐어요');
+  }catch(e){alert('삭제 중 오류가 발생했어요');console.error(e);}
+}
+</script>
+</body>
+</html>
