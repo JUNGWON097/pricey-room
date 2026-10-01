@@ -208,8 +208,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
   <div class="controls-bar">
     <div class="filter-bar">
       <button class="filter-btn active" onclick="setFilter('all',this)">전체</button>
-      <button class="filter-btn" onclick="setFilter('success',this)">탈출 성공</button>
-      <button class="filter-btn" onclick="setFilter('fail',this)">실패</button>
       <button class="filter-btn" onclick="setFilter('rec',this)">추천</button>
       <button class="filter-btn" onclick="setFilter('life',this)">인생 테마</button>
     </div>
@@ -716,6 +714,48 @@ function addRankItemRow(item,i){
     const moved=rankItemsData.splice(fromIdx,1)[0];
     rankItemsData.splice(toIdx,0,moved);
     renderRankItems();
+  });
+
+  const handle=row.querySelector('.rank-item-handle');
+  let touchDragging=false,touchClone=null,touchFromIdx=-1;
+  handle.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    syncRankItemsFromDOM();
+    touchFromIdx=[...document.querySelectorAll('#rank-items-list .rank-item-row')].indexOf(row);
+    touchDragging=true;
+    row.classList.add('dragging');
+    touchClone=row.cloneNode(true);
+    touchClone.style.cssText='position:fixed;z-index:9999;opacity:0.85;pointer-events:none;background:#fff;border:1px solid #e8e4dc;border-radius:10px;width:'+row.offsetWidth+'px;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    document.body.appendChild(touchClone);
+  },{passive:false});
+  handle.addEventListener('touchmove',e=>{
+    if(!touchDragging)return;
+    e.preventDefault();
+    const touch=e.touches[0];
+    touchClone.style.left=(touch.clientX-20)+'px';
+    touchClone.style.top=(touch.clientY-20)+'px';
+    const rows=[...document.querySelectorAll('#rank-items-list .rank-item-row')];
+    rows.forEach(r=>r.classList.remove('drag-over'));
+    const el=document.elementFromPoint(touch.clientX,touch.clientY);
+    const target=el?.closest('.rank-item-row');
+    if(target&&target!==row)target.classList.add('drag-over');
+  },{passive:false});
+  handle.addEventListener('touchend',e=>{
+    if(!touchDragging)return;
+    touchDragging=false;
+    row.classList.remove('dragging');
+    if(touchClone){touchClone.remove();touchClone=null;}
+    const rows=[...document.querySelectorAll('#rank-items-list .rank-item-row')];
+    const overRow=rows.find(r=>r.classList.contains('drag-over'));
+    rows.forEach(r=>r.classList.remove('drag-over'));
+    if(overRow&&overRow!==row){
+      const toIdx=rows.indexOf(overRow);
+      if(touchFromIdx>=0&&touchFromIdx!==toIdx){
+        const moved=rankItemsData.splice(touchFromIdx,1)[0];
+        rankItemsData.splice(toIdx,0,moved);
+        renderRankItems();
+      }
+    }
   });
   container.appendChild(row);
 }
