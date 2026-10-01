@@ -157,7 +157,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .rank-item-handle:active{cursor:grabbing;}
 .rank-item-row.dragging{opacity:0.4;}
 .rank-item-row.drag-over{border-top:2px solid #1a1a1a;}
-.rank-item-row{display:flex;align-items:center;gap:8px;}
+.rank-item-row{display:flex;align-items:center;gap:8px;padding:5px 0;}
 .rank-item-num{font-size:0.85rem;font-weight:700;color:#bbb;min-width:22px;}
 .rank-item-theme{flex:1;}
 .rank-item-score{width:60px;}
@@ -769,6 +769,10 @@ window.addRankItem=function(){
   rankItemsData.push({theme:'',score:'',comment:''});
   const i=rankItemsData.length-1;
   addRankItemRow(rankItemsData[i],i);
+  const newRow=document.querySelectorAll('#rank-items-list .rank-item-row');
+  const lastRow=newRow[newRow.length-1];
+  const input=lastRow?.querySelector('.rank-item-theme');
+  if(input)setTimeout(()=>input.focus(),50);
 }
 window.removeRankItem=function(btn){
   syncRankItemsFromDOM();
