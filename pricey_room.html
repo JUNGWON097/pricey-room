@@ -667,7 +667,12 @@ window.submitComment=async function(targetId,inputId){
   const input=document.getElementById(inputId);
   const text=input.value.trim();if(!text)return;
   const nick=getNick();if(!nick)return;
-  try{await addDoc(collection(db,'comments'),{targetId,nick,text,date:new Date().toLocaleDateString('ko-KR'),createdAt:Date.now()});input.value='';input.style.height='';delete cmtDrafts[inputId];showToast('댓글이 등록됐어요 💬');}catch(e){console.error(e);}
+  // 등록 전에 먼저 비워둠 (등록 중 화면이 새로 그려져도 남지 않게)
+  delete cmtDrafts[inputId];input.value='';input.style.height='';
+  try{await addDoc(collection(db,'comments'),{targetId,nick,text,date:new Date().toLocaleDateString('ko-KR'),createdAt:Date.now()});
+    const cur=document.getElementById(inputId);if(cur&&cur.value===text){cur.value='';cur.style.height='';}
+    showToast('댓글이 등록됐어요 💬');}
+  catch(e){console.error(e);cmtDrafts[inputId]=text;const cur=document.getElementById(inputId);if(cur){cur.value=text;}showToast('댓글을 등록하지 못했어요');}
 }
 
 window.toggleDetail=function(id){openDetailId=openDetailId===id?null:id;renderRecords();renderRankCards();renderPosts();}
