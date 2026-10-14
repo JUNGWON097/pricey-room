@@ -131,6 +131,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .react-opt.mine{background:#1a1a1a;color:#fff;}
 .pos-group{flex-wrap:wrap;}
 .pos-group .toggle-btn{flex:1 0 22%;}
+.cmt-edit-btn{border:none;background:none;color:#aaa;font-size:0.68rem;cursor:pointer;font-family:inherit;margin-left:6px;padding:0;}
+.cmt-edit-btn:hover{color:#555;}
+.cmt-edit-row{margin-top:2px;}
+.cmt-edit-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:4px;}
+.cmt-edit-actions button{border:none;background:none;font-size:0.72rem;color:#888;cursor:pointer;font-family:inherit;padding:0;}
+.cmt-edit-actions .danger{color:#c0392b;}
+.cmt-edited{font-size:0.66rem;color:#bbb;}
 .comment-text{font-size:0.8rem;color:#333;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
 .comment-input-row{display:flex;gap:6px;align-items:flex-end;}
 .comment-input{flex:1;resize:none;overflow:hidden;line-height:1.5;min-height:34px;max-height:160px;border:1px solid #e0ddd6;border-radius:8px;padding:0.45rem 0.65rem;font-size:0.8rem;font-family:inherit;outline:none;}
@@ -646,7 +653,12 @@ function renderComment(c){
   if(openWho&&openWho.startsWith(c.id+':')){const k=openWho.slice(c.id.length+1);const em=(REACTIONS.find(x=>x[0]===k)||[])[1]||'';const inf=reactInfo(c,k);
     if(inf.count)who=`<div class="react-who">${em} ${inf.names.map(esc).join(', ')}${inf.legacy?`${inf.names.length?' · ':''}이름 없이 ${inf.legacy}명`:''}</div>`;}
   const picker=openReactPicker===c.id?`<div class="react-picker">${REACTIONS.map(([k,e])=>`<button type="button" class="react-opt${reactInfo(c,k).mine?' mine':''}" onclick="toggleReact(event,'${c.id}','${k}')">${e}</button>`).join('')}</div>`:'';
-  return `<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}</span></div><div class="comment-text">${c.text}</div><div class="react-row">${chips}<button type="button" class="react-add" onclick="toggleReactPicker(event,'${c.id}')">☺+</button></div>${who}${picker}</div>`;
+  const canEdit=c.pwHash||(myNick()&&c.nick===myNick());
+  const editBtn=canEdit?`<button type="button" class="cmt-edit-btn" onclick="onCmtEditClick(event,'${c.id}')">수정</button>`:'';
+  const body=editingCmt===c.id
+    ?`<div class="comment-input-row cmt-edit-row"><textarea class="comment-input" id="ce-${c.id}" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">${esc(c.text)}</textarea><button class="comment-submit" onclick="saveCmtEdit(event,'${c.id}')">저장</button></div><div class="cmt-edit-actions"><button type="button" onclick="cancelCmtEdit(event,'${c.id}')">취소</button><button type="button" class="danger" onclick="deleteCmt(event,'${c.id}')">삭제</button></div>`
+    :`<div class="comment-text">${c.text}${c.editedAt?'<span class="cmt-edited"> (수정됨)</span>':''}</div>`;
+  return `<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}${editBtn}</span></div>${body}<div class="react-row">${chips}<button type="button" class="react-add" onclick="toggleReactPicker(event,'${c.id}')">☺+</button></div>${who}${picker}</div>`;
 }
 function rerenderAll(){renderRecords();renderPosts();renderRankCards();}
 window.toggleReactPicker=function(e,id){e.stopPropagation();openReactPicker=openReactPicker===id?null:id;rerenderAll();}
@@ -663,13 +675,31 @@ window.toggleReact=async function(e,id,k){
   }catch(err){console.error(err);showToast('반응을 저장하지 못했어요');}
   rerenderAll();
 }
+let editingCmt=null;
+function findCmt(id){for(const t in comments){const c=(comments[t]||[]).find(x=>x.id===id);if(c)return c;}return null;}
+function myPwHash(){try{return localStorage.getItem('myPwHash')||'';}catch(e){return '';}}
+async function getPwHash(){let h=myPwHash();if(h)return h;const pw=prompt('댓글 수정·삭제용 비밀번호를 정해주세요\n(이 기기에 저장돼서 다음부터는 안 물어봐요)');if(!pw)return '';h=await hashPw(pw);try{localStorage.setItem('myPwHash',h);}catch(e){}return h;}
+window.onCmtEditClick=function(e,id){e.stopPropagation();const c=findCmt(id);if(!c)return;
+  const open=()=>{editingCmt=id;rerenderAll();setTimeout(()=>{const el=document.getElementById('ce-'+id);if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);el.style.height='auto';el.style.height=el.scrollHeight+'px';}},30);};
+  if(c.pwHash)showPwModal(id,open,c.nick);else open();}
+window.cancelCmtEdit=function(e,id){e.stopPropagation();delete cmtDrafts['ce-'+id];editingCmt=null;rerenderAll();}
+window.saveCmtEdit=async function(e,id){e.stopPropagation();const el=document.getElementById('ce-'+id);const text=(el?el.value:'').trim();if(!text)return;
+  const c=findCmt(id);const upd={text,editedAt:Date.now()};if(c&&!c.pwHash){const h=await getPwHash();if(h)upd.pwHash=h;}
+  delete cmtDrafts['ce-'+id];editingCmt=null;
+  try{await updateDoc(doc(db,'comments',id),upd);showToast('댓글을 수정했어요 ✏️');}catch(err){console.error(err);showToast('수정하지 못했어요');}
+  rerenderAll();}
+window.deleteCmt=async function(e,id){e.stopPropagation();if(!confirm('이 댓글을 삭제할까요?'))return;
+  delete cmtDrafts['ce-'+id];editingCmt=null;
+  try{await deleteDoc(doc(db,'comments',id));showToast('댓글을 삭제했어요');}catch(err){console.error(err);showToast('삭제하지 못했어요');}
+  rerenderAll();}
 window.submitComment=async function(targetId,inputId){
   const input=document.getElementById(inputId);
   const text=input.value.trim();if(!text)return;
   const nick=getNick();if(!nick)return;
+  const pwHash=await getPwHash();if(!pwHash)return;
   // 등록 전에 먼저 비워둠 (등록 중 화면이 새로 그려져도 남지 않게)
   delete cmtDrafts[inputId];input.value='';input.style.height='';
-  try{await addDoc(collection(db,'comments'),{targetId,nick,text,date:new Date().toLocaleDateString('ko-KR'),createdAt:Date.now()});
+  try{await addDoc(collection(db,'comments'),{targetId,nick,text,pwHash,date:new Date().toLocaleDateString('ko-KR'),createdAt:Date.now()});
     const cur=document.getElementById(inputId);if(cur&&cur.value===text){cur.value='';cur.style.height='';}
     showToast('댓글이 등록됐어요 💬');}
   catch(e){console.error(e);cmtDrafts[inputId]=text;const cur=document.getElementById(inputId);if(cur){cur.value=text;}showToast('댓글을 등록하지 못했어요');}
@@ -689,7 +719,7 @@ window.confirmPw=async function(){
   const pw=document.getElementById('pw-input').value;
   if(!pw){document.getElementById('pw-err').style.display='block';document.getElementById('pw-err').textContent='비밀번호를 입력해주세요';return;}
   const hash=await hashPw(pw);
-  const all=[...records,...posts,...rankCards];
+  const all=[...records,...posts,...rankCards,...Object.values(comments).flat()];
   const r=all.find(x=>x.id===pwTargetId);
   if(!r||r.pwHash!==hash){document.getElementById('pw-err').style.display='block';document.getElementById('pw-err').textContent='비밀번호가 맞지 않아요';return;}
   const cb=pwCallback;closePwModal();setTimeout(cb,50);
