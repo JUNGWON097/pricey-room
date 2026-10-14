@@ -104,6 +104,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .comment-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
 .comment-nick{font-size:0.72rem;font-weight:600;color:#555;}
 .comment-date{font-size:0.65rem;color:#ccc;}
+.react-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;align-items:center;}
+.react-chip,.react-add{border:1px solid #e0ddd6;background:#fff;border-radius:12px;padding:1px 7px;font-size:0.72rem;cursor:pointer;font-family:inherit;line-height:1.6;color:#444;}
+.react-chip span{font-size:0.68rem;color:#888;}
+.react-chip.mine{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
+.react-chip.mine span{color:#ddd;}
+.react-add{color:#999;}
+.react-picker{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;padding:6px;background:#fff;border:1px solid #e0ddd6;border-radius:10px;}
+.react-opt{border:none;background:#f7f5f0;border-radius:8px;padding:4px 8px;font-size:0.9rem;cursor:pointer;font-family:inherit;}
+.react-opt b,.react-chip b{font-weight:800;color:#c0392b;}
+.react-chip.mine b{color:#ffb4a8;}
+.react-opt.mine{background:#1a1a1a;color:#fff;}
+.pos-group{flex-wrap:wrap;}
+.pos-group .toggle-btn{flex:1 0 22%;}
 .comment-text{font-size:0.8rem;color:#333;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
 .comment-input-row{display:flex;gap:6px;align-items:flex-end;}
 .comment-input{flex:1;resize:none;overflow:hidden;line-height:1.5;min-height:34px;max-height:160px;border:1px solid #e0ddd6;border-radius:8px;padding:0.45rem 0.65rem;font-size:0.8rem;font-family:inherit;outline:none;}
@@ -261,10 +274,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
     </div>
     <div class="form-row">
       <label class="form-label">포지션</label>
-      <div class="toggle-group">
-        <button class="toggle-btn active" id="pos-none" onclick="togglePos('')">선택 안 함</button>
-        <button class="toggle-btn" id="pos-jjol" onclick="togglePos('쫄')">😱 쫄</button>
-        <button class="toggle-btn" id="pos-tank" onclick="togglePos('탱')">🛡️ 탱</button>
+      <div class="toggle-group pos-group" id="pos-group">
       </div>
     </div>
     <div class="form-row"><label class="form-label">테마명 *</label><input class="form-input" id="f-theme" placeholder="예: 괴록"></div>
@@ -383,7 +393,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, setDoc, deleteDoc, doc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, setDoc, deleteDoc, updateDoc, increment, doc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAidrKvznTQ5BO85jNZ4FsQZ7QYUy3jUHw",
@@ -475,7 +485,7 @@ window.renderRecords=function(){
     return`<div class="record-card" id="card-${r.id}">
       <div class="record-card-header" onclick="toggleDetail('${r.id}')">
         <div class="record-top">
-          <div><div class="record-theme">${r.theme||''}</div>${r.shop?`<div class="record-shop">${r.shop}</div>`:''}<div class="record-nick">by ${r.nick||''}${r.pos?` <span style="background:#f0ede8;border-radius:6px;padding:1px 5px;font-size:0.65rem;color:#555">${r.pos==='쫄'?'😱 쫄':'🛡️ 탱'}</span>`:''}</div></div>
+          <div><div class="record-theme">${r.theme||''}</div>${r.shop?`<div class="record-shop">${r.shop}</div>`:''}<div class="record-nick">by ${r.nick||''}${r.pos?` <span style="background:#f0ede8;border-radius:6px;padding:1px 5px;font-size:0.65rem;color:#555">${posLabel(r.pos)}</span>`:''}</div></div>
           <div class="record-top-right"><span class="rating-badge" style="background:${rb};color:${rc}">${r.rating||''}</span>
             <div style="position:relative"><button class="kebab-btn" onclick="toggleKebab(event,'rec-${r.id}')">⋯</button>
               <div class="kebab-menu" id="kebab-rec-${r.id}" style="display:none"><button class="kebab-item" onclick="onEditClick(event,'${r.id}')">수정하기</button></div>
@@ -498,7 +508,7 @@ window.renderRecords=function(){
         ${r.memo?`<div class="detail-row"><span class="detail-label">메모</span><span class="detail-val">${r.memo}</span></div>`:''}
       </div>
       ${isOpen?`<div class="comment-section">
-        ${cmts.length?`<div class="comment-list">${cmts.map(c=>`<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}</span></div><div class="comment-text">${c.text}</div></div>`).join('')}</div>`:''}
+        ${cmts.length?`<div class="comment-list">${cmts.map(renderComment).join('')}</div>`:''}
         <div class="comment-input-row"><textarea class="comment-input" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" id="ci-${r.id}" placeholder="댓글을 남겨요..."></textarea><button class="comment-submit" onclick="submitComment('${r.id}','ci-${r.id}')">등록</button></div>
       </div>`:''}
     </div>`;
@@ -543,7 +553,7 @@ window.renderRankCards=function(){
         </div>`).join('')}
       </div>`:''}
       ${isOpen?`<div class="comment-section">
-        ${cmts.length?`<div class="comment-list">${cmts.map(c=>`<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}</span></div><div class="comment-text">${c.text}</div></div>`).join('')}</div>`:''}
+        ${cmts.length?`<div class="comment-list">${cmts.map(renderComment).join('')}</div>`:''}
         <div class="comment-input-row"><textarea class="comment-input" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" id="ci-rank-${rc.id}" placeholder="댓글을 남겨요..."></textarea><button class="comment-submit" onclick="submitComment('${rc.id}','ci-rank-${rc.id}')">등록</button></div>
       </div>`:''}
     </div>`;
@@ -573,7 +583,7 @@ window.renderPosts=function(){
       <div class="post-body ${isOpen?'open':''}">
         <div class="post-content">${p.content||''}</div>
         <div class="comment-section" style="padding:0.75rem 0 0">
-          ${cmts.length?`<div class="comment-list">${cmts.map(c=>`<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}</span></div><div class="comment-text">${c.text}</div></div>`).join('')}</div>`:''}
+          ${cmts.length?`<div class="comment-list">${cmts.map(renderComment).join('')}</div>`:''}
           <div class="comment-input-row"><textarea class="comment-input" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" id="ci-post-${p.id}" placeholder="댓글을 남겨요..."></textarea><button class="comment-submit" onclick="submitComment('${p.id}','ci-post-${p.id}')">등록</button></div>
         </div>
       </div>
@@ -582,6 +592,26 @@ window.renderPosts=function(){
 }
 
 // 댓글
+const REACTIONS=[['up','👍'],['down','👎'],['heart','❤️'],['angry','😡'],['cry','😢'],['tongue','😜'],['q','❓'],['ex','❗'],['dup','👍👍'],['jjol','<b>쫄</b>'],['tank','<b>탱</b>']];
+let openReactPicker=null;
+function myReacts(){try{return JSON.parse(localStorage.getItem('myReacts')||'{}');}catch(e){return {};}}
+function saveMyReacts(m){try{localStorage.setItem('myReacts',JSON.stringify(m));}catch(e){}}
+function renderComment(c){
+  const rx=c.reactions||{};const mine=myReacts();
+  const chips=REACTIONS.filter(([k])=>rx[k]>0).map(([k,e])=>`<button type="button" class="react-chip${mine[c.id+':'+k]?' mine':''}" onclick="toggleReact(event,'${c.id}','${k}')">${e} <span>${rx[k]}</span></button>`).join('');
+  const picker=openReactPicker===c.id?`<div class="react-picker">${REACTIONS.map(([k,e])=>`<button type="button" class="react-opt${mine[c.id+':'+k]?' mine':''}" onclick="toggleReact(event,'${c.id}','${k}')">${e}</button>`).join('')}</div>`:'';
+  return `<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}</span></div><div class="comment-text">${c.text}</div><div class="react-row">${chips}<button type="button" class="react-add" onclick="toggleReactPicker(event,'${c.id}')">☺+</button></div>${picker}</div>`;
+}
+function rerenderAll(){renderRecords();renderPosts();renderRankCards();}
+window.toggleReactPicker=function(e,id){e.stopPropagation();openReactPicker=openReactPicker===id?null:id;rerenderAll();}
+window.toggleReact=async function(e,id,k){
+  e.stopPropagation();
+  const m=myReacts();const key=id+':'+k;const had=!!m[key];
+  if(had)delete m[key];else m[key]=1;saveMyReacts(m);
+  openReactPicker=null;
+  try{await updateDoc(doc(db,'comments',id),{['reactions.'+k]:increment(had?-1:1)});}catch(err){console.error(err);showToast('반응을 저장하지 못했어요');}
+  rerenderAll();
+}
 window.submitComment=async function(targetId,inputId){
   const input=document.getElementById(inputId);
   const text=input.value.trim();if(!text)return;
@@ -822,8 +852,11 @@ window.toggleHorror=function(v){horrorVal=horrorVal===v?0:v;setHorrorUI(horrorVa
 function setHorrorUI(v){horrorVal=v||0;for(let i=1;i<=5;i++)document.getElementById('h-'+i).classList.toggle('active',i<=horrorVal&&horrorVal>0);}
 window.toggleActor=function(v){setActorUI(v);}
 function setActorUI(v){actorVal=v===undefined?'':v;['y','n',''].forEach(x=>document.getElementById('a-'+(x===''?'none':x)).classList.toggle('active',x===actorVal));}
+const POSITIONS=[['','선택 안 함'],['쫄쫄','😭 쫄쫄'],['쫄','😱 쫄'],['전진쫄','🏃 전진쫄'],['쫄탱','😰 쫄탱'],['비명탱','🗣️ 비명탱'],['탱','🛡️ 탱'],['탱탱','💪 탱탱']];
+function posLabel(v){const f=POSITIONS.find(x=>x[0]===v);return f?f[1]:v;}
+document.getElementById('pos-group').innerHTML=POSITIONS.map(([v,l])=>`<button type="button" class="toggle-btn pos-btn${v===''?' active':''}" data-pos="${v}" onclick="togglePos('${v}')">${l}</button>`).join('');
 window.togglePos=function(v){setPosUI(v);}
-function setPosUI(v){posVal=v===undefined?'':v;['','쫄','탱'].forEach(x=>document.getElementById('pos-'+(x===''?'none':x==='쫄'?'jjol':'tank')).classList.toggle('active',x===posVal));}
+function setPosUI(v){posVal=v===undefined?'':v;document.querySelectorAll('.pos-btn').forEach(b=>b.classList.toggle('active',b.dataset.pos===posVal));}
 
 // 마이그레이션
 async function migrateData(){
