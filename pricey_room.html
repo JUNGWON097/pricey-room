@@ -111,10 +111,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .comment-nick{font-size:0.72rem;font-weight:600;color:#555;}
 .comment-date{font-size:0.65rem;color:#ccc;}
 .react-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;align-items:center;}
-.react-chip,.react-add{border:1px solid #e0ddd6;background:#fff;border-radius:12px;padding:1px 7px;font-size:0.72rem;cursor:pointer;font-family:inherit;line-height:1.6;color:#444;}
-.react-chip span{font-size:0.68rem;color:#888;}
+.react-add{border:1px solid #e0ddd6;background:#fff;border-radius:12px;padding:1px 7px;font-size:0.72rem;cursor:pointer;font-family:inherit;line-height:1.6;color:#444;}
+.react-chip{display:inline-flex;align-items:stretch;border:1px solid #e0ddd6;background:#fff;border-radius:12px;overflow:hidden;font-size:0.72rem;line-height:1.6;}
+.react-chip button{border:none;background:none;font-family:inherit;cursor:pointer;color:#444;font-size:0.72rem;}
+.rc-emo{padding:1px 4px 1px 7px;}
+.rc-num{padding:1px 7px 1px 4px;color:#888 !important;border-left:1px solid #eee !important;}
+.react-chip.mine .rc-num{border-left-color:#444 !important;}
+.react-chip.mine button{color:#fff;}
+.react-chip.mine .rc-num{color:#ddd !important;}
+.react-who{margin-top:4px;font-size:0.72rem;color:#666;background:#fff;border:1px solid #e0ddd6;border-radius:8px;padding:4px 8px;}
+.header-right{display:flex;gap:6px;align-items:center;}
+.me-btn{border:1px solid #e0ddd6;background:#fff;border-radius:20px;padding:0.35rem 0.7rem;font-size:0.74rem;color:#555;cursor:pointer;font-family:inherit;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis;}
 .react-chip.mine{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
-.react-chip.mine span{color:#ddd;}
 .react-add{color:#999;}
 .react-picker{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;padding:6px;background:#fff;border:1px solid #e0ddd6;border-radius:10px;}
 .react-opt{border:none;background:#f7f5f0;border-radius:8px;padding:4px 8px;font-size:0.9rem;cursor:pointer;font-family:inherit;}
@@ -209,7 +217,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
     <h1>👻 갇힘일지</h1>
     <p id="total-sub">불러오는 중...</p>
   </div>
-  <button class="add-btn" id="main-add-btn" onclick="handleAddBtn()">+ 추가</button>
+  <div class="header-right"><button class="me-btn" id="me-btn" onclick="changeNick()">👤 닉네임 설정</button><button class="add-btn" id="main-add-btn" onclick="handleAddBtn()">+ 추가</button></div>
 </div>
 
 <!-- 기록 탭 -->
@@ -399,7 +407,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, setDoc, deleteDoc, updateDoc, increment, doc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, setDoc, deleteDoc, updateDoc, increment, arrayUnion, arrayRemove, doc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAidrKvznTQ5BO85jNZ4FsQZ7QYUy3jUHw",
@@ -616,29 +624,49 @@ window.renderPosts=function(){
 
 // 댓글
 const REACTIONS=[['up','👍'],['down','👎'],['heart','❤️'],['angry','😡'],['cry','😢'],['tongue','😜'],['q','❓'],['ex','❗'],['dup','👍👍'],['jjol','<b>쫄</b>'],['tank','<b>탱</b>']];
-let openReactPicker=null;
-function myReacts(){try{return JSON.parse(localStorage.getItem('myReacts')||'{}');}catch(e){return {};}}
-function saveMyReacts(m){try{localStorage.setItem('myReacts',JSON.stringify(m));}catch(e){}}
+let openReactPicker=null, openWho=null;
+// ── 내 닉네임 (기기에 한 번 저장) ──
+function myNick(){try{return localStorage.getItem('myNick')||'';}catch(e){return '';}}
+function saveNick(n){try{localStorage.setItem('myNick',n);}catch(e){}updateMeBtn();}
+function getNick(){let n=myNick();if(n)return n;n=(prompt('처음 한 번만 닉네임을 정해주세요\n(이 기기에 저장돼서 다음부터는 안 물어봐요)')||'').trim();if(n)saveNick(n);return n;}
+window.changeNick=function(){const n=(prompt('닉네임을 바꿀까요?',myNick())||'').trim();if(n){saveNick(n);showToast(`${n}(으)로 저장했어요`);}}
+function updateMeBtn(){const b=document.getElementById('me-btn');if(b)b.textContent='👤 '+(myNick()||'닉네임 설정');}
+function esc(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function legacyReacts(){try{return JSON.parse(localStorage.getItem('myReacts')||'{}');}catch(e){return {};}}
+function saveLegacy(m){try{localStorage.setItem('myReacts',JSON.stringify(m));}catch(e){}}
+function reactInfo(c,k){
+  const names=((c.reactors||{})[k])||[];const legacy=Math.max(0,(c.reactions||{})[k]||0);
+  const me=myNick();const mineNamed=!!me&&names.includes(me);const mineLegacy=!!legacyReacts()[c.id+':'+k];
+  return {names,legacy,count:names.length+legacy,mine:mineNamed||mineLegacy,mineNamed,mineLegacy};
+}
 function renderComment(c){
-  const rx=c.reactions||{};const mine=myReacts();
-  const chips=REACTIONS.filter(([k])=>rx[k]>0).map(([k,e])=>`<button type="button" class="react-chip${mine[c.id+':'+k]?' mine':''}" onclick="toggleReact(event,'${c.id}','${k}')">${e} <span>${rx[k]}</span></button>`).join('');
-  const picker=openReactPicker===c.id?`<div class="react-picker">${REACTIONS.map(([k,e])=>`<button type="button" class="react-opt${mine[c.id+':'+k]?' mine':''}" onclick="toggleReact(event,'${c.id}','${k}')">${e}</button>`).join('')}</div>`:'';
-  return `<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}</span></div><div class="comment-text">${c.text}</div><div class="react-row">${chips}<button type="button" class="react-add" onclick="toggleReactPicker(event,'${c.id}')">☺+</button></div>${picker}</div>`;
+  const chips=REACTIONS.map(([k,e])=>[k,e,reactInfo(c,k)]).filter(x=>x[2].count>0).map(([k,e,inf])=>
+    `<span class="react-chip${inf.mine?' mine':''}"><button type="button" class="rc-emo" onclick="toggleReact(event,'${c.id}','${k}')">${e}</button><button type="button" class="rc-num" onclick="toggleWho(event,'${c.id}','${k}')">${inf.count}</button></span>`).join('');
+  let who='';
+  if(openWho&&openWho.startsWith(c.id+':')){const k=openWho.slice(c.id.length+1);const em=(REACTIONS.find(x=>x[0]===k)||[])[1]||'';const inf=reactInfo(c,k);
+    if(inf.count)who=`<div class="react-who">${em} ${inf.names.map(esc).join(', ')}${inf.legacy?`${inf.names.length?' · ':''}이름 없이 ${inf.legacy}명`:''}</div>`;}
+  const picker=openReactPicker===c.id?`<div class="react-picker">${REACTIONS.map(([k,e])=>`<button type="button" class="react-opt${reactInfo(c,k).mine?' mine':''}" onclick="toggleReact(event,'${c.id}','${k}')">${e}</button>`).join('')}</div>`:'';
+  return `<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}</span></div><div class="comment-text">${c.text}</div><div class="react-row">${chips}<button type="button" class="react-add" onclick="toggleReactPicker(event,'${c.id}')">☺+</button></div>${who}${picker}</div>`;
 }
 function rerenderAll(){renderRecords();renderPosts();renderRankCards();}
 window.toggleReactPicker=function(e,id){e.stopPropagation();openReactPicker=openReactPicker===id?null:id;rerenderAll();}
+window.toggleWho=function(e,id,k){e.stopPropagation();const key=id+':'+k;openWho=openWho===key?null:key;rerenderAll();}
 window.toggleReact=async function(e,id,k){
   e.stopPropagation();
-  const m=myReacts();const key=id+':'+k;const had=!!m[key];
-  if(had)delete m[key];else m[key]=1;saveMyReacts(m);
-  openReactPicker=null;
-  try{await updateDoc(doc(db,'comments',id),{['reactions.'+k]:increment(had?-1:1)});}catch(err){console.error(err);showToast('반응을 저장하지 못했어요');}
+  let c=null;for(const t in comments){c=(comments[t]||[]).find(x=>x.id===id);if(c)break;}
+  if(!c)return;
+  const inf=reactInfo(c,k);openReactPicker=null;
+  try{
+    if(inf.mineLegacy){const m=legacyReacts();delete m[id+':'+k];saveLegacy(m);await updateDoc(doc(db,'comments',id),{['reactions.'+k]:increment(-1)});}
+    else{const nick=getNick();if(!nick){rerenderAll();return;}
+      await updateDoc(doc(db,'comments',id),{['reactors.'+k]:inf.mineNamed?arrayRemove(nick):arrayUnion(nick)});}
+  }catch(err){console.error(err);showToast('반응을 저장하지 못했어요');}
   rerenderAll();
 }
 window.submitComment=async function(targetId,inputId){
   const input=document.getElementById(inputId);
   const text=input.value.trim();if(!text)return;
-  const nick=prompt('닉네임을 입력해주세요');if(!nick)return;
+  const nick=getNick();if(!nick)return;
   try{await addDoc(collection(db,'comments'),{targetId,nick,text,date:new Date().toLocaleDateString('ko-KR'),createdAt:Date.now()});input.value='';input.style.height='';showToast('댓글이 등록됐어요 💬');}catch(e){console.error(e);}
 }
 
@@ -670,7 +698,7 @@ window.openAddModal=function(){
   editId=null;
   document.getElementById('modal-title').textContent='새 기록 추가';
   document.getElementById('btn-delete').style.display='none';
-  document.getElementById('f-nick').value='';document.getElementById('f-pw').value='';
+  document.getElementById('f-nick').value=myNick();document.getElementById('f-pw').value='';
   ['f-theme','f-shop','f-genre','f-memo'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('f-party').value='';document.getElementById('f-hint').value='';
@@ -690,7 +718,7 @@ function openEditModal(id){
 window.closeModal=function(){document.getElementById('modal-bg').style.display='none';}
 window.handleBgClick=function(e){if(e.target===document.getElementById('modal-bg'))closeModal();}
 window.saveRecord=async function(){
-  const nick=document.getElementById('f-nick').value.trim(),pw=document.getElementById('f-pw').value,theme=document.getElementById('f-theme').value.trim();
+  const nick=document.getElementById('f-nick').value.trim();if(nick&&!myNick())saveNick(nick);const pw=document.getElementById('f-pw').value,theme=document.getElementById('f-theme').value.trim();
   if(!nick){alert('닉네임을 입력해주세요');return;}if(!pw&&!editId){alert('비밀번호를 입력해주세요');return;}if(!theme){alert('테마명을 입력해주세요');return;}
   const r={nick,pos:posVal,theme,shop:document.getElementById('f-shop').value.trim(),date:document.getElementById('f-date').value,party:document.getElementById('f-party').value,hint:document.getElementById('f-hint').value,genre:document.getElementById('f-genre').value.trim(),result:resultVal,rec:recVal,rating:ratingVal,diff:diffVal,horror:horrorVal,actor:actorVal,memo:document.getElementById('f-memo').value.trim(),updatedAt:Date.now()};
   if(pw)r.pwHash=await hashPw(pw);
@@ -703,7 +731,7 @@ window.openRankModal=function(){
   editRankId=null;rankItemsData=[{theme:'',score:'',comment:''}];
   document.getElementById('rank-modal-title').textContent=rankInnerTab==='horror'?'👻 공포 랭킹 작성':'✨ 인생 테마 랭킹 작성';
   document.getElementById('rank-btn-delete').style.display='none';
-  document.getElementById('r-nick').value='';document.getElementById('r-pw').value='';document.getElementById('r-title').value='';
+  document.getElementById('r-nick').value=myNick();document.getElementById('r-pw').value='';document.getElementById('r-title').value='';
   document.getElementById('r-items-label').textContent=rankInnerTab==='horror'?'순위 목록 (테마명 + 공포도 점수)':'순위 목록 (테마명 + 한줄 코멘트)';
   renderRankItems();
   document.getElementById('rank-modal-bg').style.display='flex';
@@ -839,7 +867,7 @@ window.closeRankModal=function(){document.getElementById('rank-modal-bg').style.
 window.handleRankBgClick=function(e){if(e.target===document.getElementById('rank-modal-bg'))closeRankModal();}
 window.saveRankCard=async function(){
   syncRankItemsFromDOM();
-  const nick=document.getElementById('r-nick').value.trim(),pw=document.getElementById('r-pw').value,title=document.getElementById('r-title').value.trim();
+  const nick=document.getElementById('r-nick').value.trim();if(nick&&!myNick())saveNick(nick);const pw=document.getElementById('r-pw').value,title=document.getElementById('r-title').value.trim();
   if(!nick){alert('닉네임을 입력해주세요');return;}if(!pw&&!editRankId){alert('비밀번호를 입력해주세요');return;}if(!title){alert('제목을 입력해주세요');return;}
   const validItems=rankItemsData.filter(item=>(item.theme||'').trim());
   if(!validItems.length){alert('테마명을 하나 이상 입력해주세요');return;}
@@ -850,13 +878,13 @@ window.saveRankCard=async function(){
 window.deleteRankCard=async function(){if(!confirm('이 랭킹을 삭제할까요?'))return;try{await deleteDoc(doc(db,'rankCards',editRankId));closeRankModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');}}
 
 // 자유게시판 CRUD
-window.openPostModal=function(){editPostId=null;document.getElementById('post-modal-title').textContent='새 글 쓰기';document.getElementById('post-btn-delete').style.display='none';document.getElementById('p-nick').value='';document.getElementById('p-pw').value='';document.getElementById('p-title').value='';document.getElementById('p-content').value='';document.getElementById('post-modal-bg').style.display='flex';}
+window.openPostModal=function(){editPostId=null;document.getElementById('post-modal-title').textContent='새 글 쓰기';document.getElementById('post-btn-delete').style.display='none';document.getElementById('p-nick').value=myNick();document.getElementById('p-pw').value='';document.getElementById('p-title').value='';document.getElementById('p-content').value='';document.getElementById('post-modal-bg').style.display='flex';}
 window.onPostEditClick=function(e,id){e.stopPropagation();const p=posts.find(x=>x.id===id);if(!p)return;showPwModal(id,()=>openEditPostModal(id),p.nick);}
 function openEditPostModal(id){const p=posts.find(x=>x.id===id);if(!p)return;editPostId=id;document.getElementById('post-modal-title').textContent='글 수정';document.getElementById('post-btn-delete').style.display='';document.getElementById('p-nick').value=p.nick||'';document.getElementById('p-pw').value='';document.getElementById('p-title').value=p.title||'';document.getElementById('p-content').value=p.content||'';document.getElementById('post-modal-bg').style.display='flex';}
 window.closePostModal=function(){document.getElementById('post-modal-bg').style.display='none';}
 window.handlePostBgClick=function(e){if(e.target===document.getElementById('post-modal-bg'))closePostModal();}
 window.savePost=async function(){
-  const nick=document.getElementById('p-nick').value.trim(),pw=document.getElementById('p-pw').value,title=document.getElementById('p-title').value.trim(),content=document.getElementById('p-content').value.trim();
+  const nick=document.getElementById('p-nick').value.trim();if(nick&&!myNick())saveNick(nick);const pw=document.getElementById('p-pw').value,title=document.getElementById('p-title').value.trim(),content=document.getElementById('p-content').value.trim();
   if(!nick){alert('닉네임을 입력해주세요');return;}if(!pw&&!editPostId){alert('비밀번호를 입력해주세요');return;}if(!title){alert('제목을 입력해주세요');return;}if(!content){alert('내용을 입력해주세요');return;}
   const p={nick,title,content,date:new Date().toLocaleDateString('ko-KR'),updatedAt:Date.now()};if(pw)p.pwHash=await hashPw(pw);
   try{if(editPostId){const ex=posts.find(x=>x.id===editPostId);if(ex&&!pw)p.pwHash=ex.pwHash;p.createdAt=ex?ex.createdAt:Date.now();await setDoc(doc(db,'posts',editPostId),p);}else{p.createdAt=Date.now();markSeen((await addDoc(collection(db,'posts'),p)).id);}closePostModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
@@ -893,6 +921,7 @@ async function migrateData(){
 migrateData();
 
 ['renderRecords','renderRankCards','renderPosts'].forEach(n=>{const f=window[n];window[n]=function(...a){const r=f.apply(this,a);updateNavDots();return r;};});
+updateMeBtn();
 </script>
 </body>
 </html>
