@@ -146,6 +146,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 
 /* 자유게시판 */
 .post-list{padding:0.75rem 1.25rem;display:flex;flex-direction:column;gap:9px;}
+.new-src{font-size:0.68rem;color:#999;margin:0 0 4px 2px;}
+.new-done{padding:2.5rem 2rem 1.5rem;}
+.new-done p{color:#999;line-height:1.7;}
 .post-card{background:#fff;border-radius:12px;border:1px solid #e8e4dc;overflow:hidden;}
 .post-header{padding:0.9rem 1rem 0.6rem;cursor:pointer;}
 .post-title-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.4rem;}
@@ -269,6 +272,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 </div>
 
 <!-- 자유게시판 탭 -->
+<div class="tab-panel" id="panel-new">
+  <div class="post-list" id="new-list"></div>
+</div>
+
 <div class="tab-panel" id="panel-free">
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
@@ -278,6 +285,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 </div>
 
 <nav class="bottom-nav">
+  <button class="nav-btn" id="nav-new" onclick="switchTab('new')"><span class="nav-icon">💫</span><span class="nav-label">최신</span></button>
   <button class="nav-btn active" id="nav-record" onclick="switchTab('record')"><span class="nav-icon">🗝️</span><span class="nav-label">기록</span></button>
   <button class="nav-btn" id="nav-rank" onclick="switchTab('rank')"><span class="nav-icon">🏆</span><span class="nav-label">랭킹</span></button>
   <button class="nav-btn" id="nav-free" onclick="switchTab('free')"><span class="nav-icon">📝</span><span class="nav-label">자유</span></button>
@@ -447,19 +455,19 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 
 onSnapshot(query(collection(db,'records')),snap=>{
   records=snap.docs.map(d=>({id:d.id,...d.data()}));
-  renderRecords();
+  renderRecords();renderNew();
   document.getElementById('s-total').textContent=records.length;
   document.getElementById('s-success').textContent=records.filter(r=>r.result==='success').length;
   document.getElementById('s-rec').textContent=records.filter(r=>r.rec==='rec').length;
   document.getElementById('s-life').textContent=records.filter(r=>r.rating==='인생 테마').length;
   document.getElementById('total-sub').textContent='기록 '+records.length+'개';
 });
-onSnapshot(query(collection(db,'posts')),snap=>{posts=snap.docs.map(d=>({id:d.id,...d.data()}));renderPosts();});
-onSnapshot(query(collection(db,'rankCards')),snap=>{rankCards=snap.docs.map(d=>({id:d.id,...d.data()}));renderRankCards();});
+onSnapshot(query(collection(db,'posts')),snap=>{posts=snap.docs.map(d=>({id:d.id,...d.data()}));renderPosts();renderNew();});
+onSnapshot(query(collection(db,'rankCards')),snap=>{rankCards=snap.docs.map(d=>({id:d.id,...d.data()}));renderRankCards();renderNew();});
 onSnapshot(query(collection(db,'comments')),snap=>{
   comments={};
   snap.docs.forEach(d=>{const data=d.data();if(!comments[data.targetId])comments[data.targetId]=[];comments[data.targetId].push({id:d.id,...data});});
-  renderRecords();renderPosts();renderRankCards();
+  renderRecords();renderPosts();renderRankCards();renderNew();
 });
 
 // ── 안 읽은 표시(레드닷) ──
@@ -476,6 +484,7 @@ function updateNavDots(){
   setDot(document.getElementById('nav-record'),records.some(r=>isUnread(r.id,r.createdAt)));
   setDot(document.getElementById('nav-rank'),rankCards.some(r=>isUnread(r.id,r.createdAt)));
   setDot(document.getElementById('nav-free'),posts.some(r=>isUnread(r.id,r.createdAt)));
+  setDot(document.getElementById('nav-new'),[...records,...rankCards,...posts].some(r=>isUnread(r.id,r.createdAt)));
   setDot(document.getElementById('rit-horror'),rankCards.some(r=>(r.type||'horror')==='horror'&&isUnread(r.id,r.createdAt)));
   setDot(document.getElementById('rit-life'),rankCards.some(r=>r.type==='life'&&isUnread(r.id,r.createdAt)));
 }
@@ -489,6 +498,10 @@ window.switchTab=function(tab){
   if(tab==='record'){addBtn.textContent='+ 추가';addBtn.style.display='';}
   else if(tab==='rank'){addBtn.textContent='🏆 랭킹 작성';addBtn.style.display='';}
   else if(tab==='free'){addBtn.textContent='✍️ 글쓰기';addBtn.style.display='';}
+  else if(tab==='new'){addBtn.style.display='none';newSticky=new Set();}
+  openDetailId=null;
+  rerenderAll();
+  window.scrollTo(0,0);
 }
 window.handleAddBtn=function(){
   if(currentTab==='record')openAddModal();
@@ -514,9 +527,12 @@ window.renderRecords=function(){
   const sort=document.getElementById('sort-select').value;
   filtered=[...filtered].sort((a,b)=>sort==='reg-desc'?(b.createdAt||0)-(a.createdAt||0):sort==='reg-asc'?(a.createdAt||0)-(b.createdAt||0):sort==='play-desc'?(b.date||'').localeCompare(a.date||''):(a.date||'').localeCompare(b.date||''));
   const list=document.getElementById('records-list');
+  if(currentTab==='new'){list.innerHTML='';return;}
   if(!filtered.length){list.innerHTML=`<div class="empty"><div class="empty-icon">🗝️</div><p>${q?'검색 결과가 없어요':currentFilter==='all'?'아직 기록이 없어요.<br>첫 방탈출 기록을 남겨보세요!':'해당하는 기록이 없어요.'}</p></div>`;return;}
-  const stars=n=>n?'★'.repeat(n)+'☆'.repeat(5-n):'-';
-  list.innerHTML=filtered.map(r=>{
+  list.innerHTML=filtered.map(recordCardHtml).join('');
+}
+function recordCardHtml(r){
+    const stars=n=>n?'★'.repeat(n)+'☆'.repeat(5-n):'-';
     const rc=RATING_COLORS[r.rating]||'#888',rb=RATING_BG[r.rating]||'#f5f3ef';
     const isOpen=openDetailId===r.id;if(isOpen)markSeen(r.id);
     const cmts=(comments[r.id]||[]).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
@@ -550,8 +566,8 @@ window.renderRecords=function(){
         <div class="comment-input-row"><textarea class="comment-input" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" id="ci-${r.id}" placeholder="댓글을 남겨요... (Shift+Enter 등록)"></textarea><button class="comment-submit" onclick="submitComment('${r.id}','ci-${r.id}')">등록</button></div>
       </div>`:''}
     </div>`;
-  }).join('');
 }
+
 
 // 랭킹 카드 렌더
 window.renderRankCards=function(){
@@ -560,8 +576,11 @@ window.renderRankCards=function(){
   if(q)filtered=filtered.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.nick||'').toLowerCase().includes(q));
   filtered=[...filtered].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   const el=document.getElementById('rank-cards-list');
+  if(currentTab==='new'){el.innerHTML='';return;}
   if(!filtered.length){el.innerHTML=`<div class="empty"><div class="empty-icon">${rankInnerTab==='horror'?'👻':'✨'}</div><p>${q?'검색 결과가 없어요':'아직 랭킹이 없어요.<br>첫 랭킹을 작성해보세요!'}</p></div>`;return;}
-  el.innerHTML=filtered.map(rc=>{
+  el.innerHTML=filtered.map(rankCardHtml).join('');
+}
+function rankCardHtml(rc){
     const isOpen=openDetailId==='rank-'+rc.id;if(isOpen)markSeen(rc.id);
     const items=rc.items||[];
     const top3=items.slice(0,3);
@@ -579,7 +598,7 @@ window.renderRankCards=function(){
           </div>
         </div>
         <div class="rank-preview">
-          ${top3.map((item,i)=>`<div class="rank-preview-item"><span class="medal">${MEDALS[i]||''}</span><span class="rank-preview-theme">${item.theme||''}</span>${rankInnerTab==='horror'&&item.score?`<span style="font-size:0.72rem;color:#c0392b;margin-left:auto">👻 ${item.score}</span>`:''}${rankInnerTab==='life'&&item.comment?`<span class="rank-preview-comment">${item.comment}</span>`:''}</div>`).join('')}
+          ${top3.map((item,i)=>`<div class="rank-preview-item"><span class="medal">${MEDALS[i]||''}</span><span class="rank-preview-theme">${item.theme||''}</span>${(rc.type||'horror')==='horror'&&item.score?`<span style="font-size:0.72rem;color:#c0392b;margin-left:auto">👻 ${item.score}</span>`:''}${rc.type==='life'&&item.comment?`<span class="rank-preview-comment">${item.comment}</span>`:''}</div>`).join('')}
           ${hasMore?`<div style="font-size:0.72rem;color:#bbb;padding-left:28px">+${items.length-3}개 더보기</div>`:''}
         </div>
       </div>
@@ -587,7 +606,7 @@ window.renderRankCards=function(){
         ${items.map((item,i)=>`<div class="rank-full-item">
           <div class="rank-num-badge">${i<3?MEDALS[i]:(i+1)+'위'}</div>
           <div class="rank-full-info"><div class="rank-full-theme">${item.theme||''}</div>${item.comment?`<div class="rank-full-comment">${item.comment}</div>`:''}</div>
-          ${rankInnerTab==='horror'&&item.score?`<div class="rank-full-score">👻 ${item.score}</div>`:''}
+          ${(rc.type||'horror')==='horror'&&item.score?`<div class="rank-full-score">👻 ${item.score}</div>`:''}
         </div>`).join('')}
       </div>`:''}
       ${isOpen?`<div class="comment-section">
@@ -595,6 +614,32 @@ window.renderRankCards=function(){
         <div class="comment-input-row"><textarea class="comment-input" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" id="ci-rank-${rc.id}" placeholder="댓글을 남겨요... (Shift+Enter 등록)"></textarea><button class="comment-submit" onclick="submitComment('${rc.id}','ci-rank-${rc.id}')">등록</button></div>
       </div>`:''}
     </div>`;
+}
+
+
+// 최신 탭 렌더
+let newSticky=new Set();
+function lastActivity(id,createdAt){return Math.max(createdAt||0,...(comments[id]||[]).map(c=>c.createdAt||0));}
+function collectNew(){
+  const out=[];
+  records.forEach(r=>{if(isUnread(r.id,r.createdAt)||newSticky.has(r.id))out.push({kind:'record',item:r});});
+  rankCards.forEach(r=>{if(isUnread(r.id,r.createdAt)||newSticky.has(r.id))out.push({kind:'rank',item:r});});
+  posts.forEach(r=>{if(isUnread(r.id,r.createdAt)||newSticky.has(r.id))out.push({kind:'post',item:r});});
+  return out.sort((a,b)=>lastActivity(b.item.id,b.item.createdAt)-lastActivity(a.item.id,a.item.createdAt));
+}
+window.renderNew=function(){
+  const el=document.getElementById('new-list');if(!el)return;
+  if(currentTab!=='new'){el.innerHTML='';return;}
+  const list=collectNew();
+  list.forEach(x=>newSticky.add(x.item.id));
+  const anyUnread=list.some(x=>isUnread(x.item.id,x.item.createdAt));
+  const done=`<div class="empty new-done"><div class="empty-icon">💫</div><p>올라온 정보를 모두 확인했어요!<br>새로운 글을 남겨보세요 : )</p></div>`;
+  if(!list.length){el.innerHTML=done;return;}
+  const SRC={record:'🗝️ 기록',rank:'🏆 랭킹',post:'📝 자유'};
+  el.innerHTML=(anyUnread?'':done)+list.map(({kind,item})=>{
+    const src=kind==='rank'?`${SRC.rank} · ${(item.type||'horror')==='life'?'인생 테마':'공포 랭킹'}`:SRC[kind];
+    const card=kind==='record'?recordCardHtml(item):kind==='rank'?rankCardHtml(item):postCardHtml(item);
+    return `<div class="new-entry"><div class="new-src">${src}${hasNewCmt(item.id)&&!((item.createdAt||0)>seenAt(item.id))?' · 새 댓글':(item.createdAt||0)>seenAt(item.id)?' · 새 글':''}</div>${card}</div>`;
   }).join('');
 }
 
@@ -604,8 +649,11 @@ window.renderPosts=function(){
   let filtered=[...posts].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   if(q)filtered=filtered.filter(p=>(p.title||'').toLowerCase().includes(q)||(p.nick||'').toLowerCase().includes(q));
   const el=document.getElementById('post-list');
+  if(currentTab==='new'){el.innerHTML='';return;}
   if(!filtered.length){el.innerHTML=`<div class="empty"><div class="empty-icon">📝</div><p>${q?'검색 결과가 없어요':'아직 글이 없어요.<br>첫 글을 남겨보세요!'}</p></div>`;return;}
-  el.innerHTML=filtered.map(p=>{
+  el.innerHTML=filtered.map(postCardHtml).join('');
+}
+function postCardHtml(p){
     const isOpen=openDetailId==='post-'+p.id;if(isOpen)markSeen(p.id);
     const cmts=(comments[p.id]||[]).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
     return`<div class="post-card">
@@ -626,8 +674,8 @@ window.renderPosts=function(){
         </div>
       </div>
     </div>`;
-  }).join('');
 }
+
 
 // 댓글
 const REACTIONS=[['up','👍'],['down','👎'],['heart','❤️'],['angry','😡'],['cry','😢'],['tongue','😜'],['q','❓'],['ex','❗'],['dup','👍👍'],['jjol','<b>쫄</b>'],['tank','<b>탱</b>']];
@@ -660,7 +708,7 @@ function renderComment(c){
     :`<div class="comment-text">${c.text}${c.editedAt?'<span class="cmt-edited"> (수정됨)</span>':''}</div>`;
   return `<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}${editBtn}</span></div>${body}<div class="react-row">${chips}<button type="button" class="react-add" onclick="toggleReactPicker(event,'${c.id}')">☺+</button></div>${who}${picker}</div>`;
 }
-function rerenderAll(){renderRecords();renderPosts();renderRankCards();}
+function rerenderAll(){renderRecords();renderPosts();renderRankCards();renderNew();}
 window.toggleReactPicker=function(e,id){e.stopPropagation();openReactPicker=openReactPicker===id?null:id;rerenderAll();}
 window.toggleWho=function(e,id,k){e.stopPropagation();const key=id+':'+k;openWho=openWho===key?null:key;rerenderAll();}
 window.toggleReact=async function(e,id,k){
@@ -705,7 +753,7 @@ window.submitComment=async function(targetId,inputId){
   catch(e){console.error(e);cmtDrafts[inputId]=text;const cur=document.getElementById(inputId);if(cur){cur.value=text;}showToast('댓글을 등록하지 못했어요');}
 }
 
-window.toggleDetail=function(id){openDetailId=openDetailId===id?null:id;renderRecords();renderRankCards();renderPosts();}
+window.toggleDetail=function(id){openDetailId=openDetailId===id?null:id;rerenderAll();}
 window.setFilter=function(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderRecords();}
 window.toggleKebab=function(e,id){
   e.stopPropagation();
@@ -967,7 +1015,7 @@ function restoreCmtState(focus){
   document.querySelectorAll('.comment-input').forEach(el=>{const v=cmtDrafts[el.id];if(v&&el.value!==v){el.value=v;el.style.height='auto';el.style.height=el.scrollHeight+'px';}});
   if(focus){const el=document.getElementById(focus.id);if(el&&document.activeElement!==el){el.focus({preventScroll:true});try{el.setSelectionRange(focus.s,focus.e);}catch(e){}}}
 }
-['renderRecords','renderRankCards','renderPosts'].forEach(n=>{const f=window[n];window[n]=function(...a){const st=captureCmtState();const r=f.apply(this,a);restoreCmtState(st);updateNavDots();return r;};});
+['renderRecords','renderRankCards','renderPosts','renderNew'].forEach(n=>{const f=window[n];window[n]=function(...a){const st=captureCmtState();const r=f.apply(this,a);restoreCmtState(st);updateNavDots();return r;};});
 // Enter = 줄바꿈, Shift+Enter = 등록
 document.addEventListener('keydown',e=>{
   const t=e.target;if(!(t.classList&&t.classList.contains('comment-input')))return;
