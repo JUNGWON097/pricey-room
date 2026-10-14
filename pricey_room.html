@@ -23,6 +23,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .nav-btn{flex:1;padding:0.6rem 0;border:none;background:none;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;color:#bbb;}
 .nav-btn.active{color:#1a1a1a;}
 .nav-icon{font-size:1.2rem;}
+.nav-btn,.rank-inner-tab{position:relative;}
+.red-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#2e8b57;box-shadow:0 0 0 2px rgba(46,139,87,0.18);margin-left:5px;vertical-align:top;flex-shrink:0;}
+.nav-btn > .red-dot{position:absolute;top:6px;left:calc(50% + 10px);margin:0;}
+.rank-inner-tab > .red-dot{position:absolute;top:9px;right:4px;margin:0;}
+.cmt-new{color:#2e8b57;font-weight:600;}
 .nav-label{font-size:0.65rem;font-weight:500;}
 
 .tab-panel{display:none;}
@@ -64,7 +69,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .tag.fail{background:#fce8e8;color:#c0392b;}
 .tag.rec{background:#e8eefa;color:#2d5fa0;}
 .tag.norec{background:#fef3e2;color:#a06c2d;}
-.record-date{font-size:0.68rem;color:#ccc;margin-left:auto;}
+.record-date{font-size:0.68rem;color:#ccc;margin-left:auto;display:flex;align-items:center;gap:8px;white-space:nowrap;}
+.record-cmt{color:#999;}
 .detail-body{border-top:1px solid #f0ede8;padding:0.85rem 1rem;display:none;flex-direction:column;gap:0.6rem;}
 .detail-body.open{display:flex;}
 .detail-row{display:flex;align-items:flex-start;gap:0.5rem;}
@@ -441,6 +447,23 @@ onSnapshot(query(collection(db,'comments')),snap=>{
   renderRecords();renderPosts();renderRankCards();
 });
 
+// ── 안 읽은 표시(레드닷) ──
+let seenMap={},seenInit=Date.now();
+try{seenMap=JSON.parse(localStorage.getItem('seenMap')||'{}');const si=localStorage.getItem('seenInit');if(si)seenInit=+si;else localStorage.setItem('seenInit',String(seenInit));}catch(e){}
+function seenAt(id){return seenMap[id]||seenInit;}
+function markSeen(id){seenMap[id]=Date.now();try{localStorage.setItem('seenMap',JSON.stringify(seenMap));}catch(e){}}
+function hasNewCmt(id){const t=seenAt(id);return (comments[id]||[]).some(c=>(c.createdAt||0)>t);}
+function isUnread(id,createdAt){return (createdAt||0)>seenAt(id)||hasNewCmt(id);}
+function dotHtml(id,createdAt){return isUnread(id,createdAt)?'<span class="red-dot"></span>':'';}
+function cmtCountHtml(id){const n=(comments[id]||[]).length;return `<span class="${hasNewCmt(id)?'cmt-new':''}">💬 ${n}</span>`;}
+function setDot(el,on){if(!el)return;let d=el.querySelector(':scope > .red-dot');if(on&&!d){d=document.createElement('span');d.className='red-dot';el.appendChild(d);}else if(!on&&d)d.remove();}
+function updateNavDots(){
+  setDot(document.getElementById('nav-record'),records.some(r=>isUnread(r.id,r.createdAt)));
+  setDot(document.getElementById('nav-rank'),rankCards.some(r=>isUnread(r.id,r.createdAt)));
+  setDot(document.getElementById('nav-free'),posts.some(r=>isUnread(r.id,r.createdAt)));
+  setDot(document.getElementById('rit-horror'),rankCards.some(r=>(r.type||'horror')==='horror'&&isUnread(r.id,r.createdAt)));
+  setDot(document.getElementById('rit-life'),rankCards.some(r=>r.type==='life'&&isUnread(r.id,r.createdAt)));
+}
 window.switchTab=function(tab){
   currentTab=tab;
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
@@ -480,12 +503,12 @@ window.renderRecords=function(){
   const stars=n=>n?'★'.repeat(n)+'☆'.repeat(5-n):'-';
   list.innerHTML=filtered.map(r=>{
     const rc=RATING_COLORS[r.rating]||'#888',rb=RATING_BG[r.rating]||'#f5f3ef';
-    const isOpen=openDetailId===r.id;
+    const isOpen=openDetailId===r.id;if(isOpen)markSeen(r.id);
     const cmts=(comments[r.id]||[]).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
     return`<div class="record-card" id="card-${r.id}">
       <div class="record-card-header" onclick="toggleDetail('${r.id}')">
         <div class="record-top">
-          <div><div class="record-theme">${r.theme||''}</div>${r.shop?`<div class="record-shop">${r.shop}</div>`:''}<div class="record-nick">by ${r.nick||''}${r.pos?` <span style="background:#f0ede8;border-radius:6px;padding:1px 5px;font-size:0.65rem;color:#555">${posLabel(r.pos)}</span>`:''}</div></div>
+          <div><div class="record-theme">${r.theme||''}${dotHtml(r.id,r.createdAt)}</div>${r.shop?`<div class="record-shop">${r.shop}</div>`:''}<div class="record-nick">by ${r.nick||''}${r.pos?` <span style="background:#f0ede8;border-radius:6px;padding:1px 5px;font-size:0.65rem;color:#555">${posLabel(r.pos)}</span>`:''}</div></div>
           <div class="record-top-right"><span class="rating-badge" style="background:${rb};color:${rc}">${r.rating||''}</span>
             <div style="position:relative"><button class="kebab-btn" onclick="toggleKebab(event,'rec-${r.id}')">⋯</button>
               <div class="kebab-menu" id="kebab-rec-${r.id}" style="display:none"><button class="kebab-item" onclick="onEditClick(event,'${r.id}')">수정하기</button></div>
@@ -496,7 +519,7 @@ window.renderRecords=function(){
           <span class="tag ${r.result}">${r.result==='success'?'🎉 탈출 성공':'💀 실패'}</span>
           <span class="tag ${r.rec}">${r.rec==='rec'?'👍 추천':'👎 비추천'}</span>
           ${r.genre?`<span class="tag">${r.genre}</span>`:''}
-          ${r.date?`<span class="record-date">${r.date}</span>`:''}
+          <span class="record-date"><span class="record-cmt">${cmtCountHtml(r.id)}</span>${r.date||''}</span>
         </div>
       </div>
       <div class="detail-body ${isOpen?'open':''}" id="detail-${r.id}">
@@ -524,7 +547,7 @@ window.renderRankCards=function(){
   const el=document.getElementById('rank-cards-list');
   if(!filtered.length){el.innerHTML=`<div class="empty"><div class="empty-icon">${rankInnerTab==='horror'?'👻':'✨'}</div><p>${q?'검색 결과가 없어요':'아직 랭킹이 없어요.<br>첫 랭킹을 작성해보세요!'}</p></div>`;return;}
   el.innerHTML=filtered.map(rc=>{
-    const isOpen=openDetailId==='rank-'+rc.id;
+    const isOpen=openDetailId==='rank-'+rc.id;if(isOpen)markSeen(rc.id);
     const items=rc.items||[];
     const top3=items.slice(0,3);
     const hasMore=items.length>3;
@@ -533,8 +556,8 @@ window.renderRankCards=function(){
       <div class="rank-list-header" onclick="toggleDetail('rank-${rc.id}')">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div>
-            <div class="rank-list-title">${rc.title||''}</div>
-            <div style="font-size:0.7rem;color:#bbb;margin-bottom:0.5rem">by ${rc.nick||''} · ${rc.date||''}</div>
+            <div class="rank-list-title">${rc.title||''}${dotHtml(rc.id,rc.createdAt)}</div>
+            <div style="font-size:0.7rem;color:#bbb;margin-bottom:0.5rem">by ${rc.nick||''} · ${rc.date||''} · <span style="color:#999">${cmtCountHtml(rc.id)}</span></div>
           </div>
           <div style="position:relative"><button class="kebab-btn" onclick="toggleKebab(event,'rank-${rc.id}')">⋯</button>
             <div class="kebab-menu" id="kebab-rank-${rc.id}" style="display:none"><button class="kebab-item" onclick="onRankEditClick(event,'${rc.id}')">수정하기</button></div>
@@ -568,16 +591,16 @@ window.renderPosts=function(){
   const el=document.getElementById('post-list');
   if(!filtered.length){el.innerHTML=`<div class="empty"><div class="empty-icon">📝</div><p>${q?'검색 결과가 없어요':'아직 글이 없어요.<br>첫 글을 남겨보세요!'}</p></div>`;return;}
   el.innerHTML=filtered.map(p=>{
-    const isOpen=openDetailId==='post-'+p.id;
+    const isOpen=openDetailId==='post-'+p.id;if(isOpen)markSeen(p.id);
     const cmts=(comments[p.id]||[]).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
     return`<div class="post-card">
       <div class="post-header" onclick="toggleDetail('post-${p.id}')">
-        <div class="post-title-row"><div class="post-title">${p.title||''}</div>
+        <div class="post-title-row"><div class="post-title">${p.title||''}${dotHtml(p.id,p.createdAt)}</div>
           <div style="position:relative"><button class="kebab-btn" onclick="toggleKebab(event,'post-${p.id}')">⋯</button>
             <div class="kebab-menu" id="kebab-post-${p.id}" style="display:none"><button class="kebab-item" onclick="onPostEditClick(event,'${p.id}')">수정하기</button></div>
           </div>
         </div>
-        <div class="post-meta-row"><span class="post-nick">${p.nick||''}</span><span class="post-date">${p.date||''}</span><span class="comment-count">💬 ${(comments[p.id]||[]).length}</span></div>
+        <div class="post-meta-row"><span class="post-nick">${p.nick||''}</span><span class="post-date">${p.date||''}</span><span class="comment-count">${cmtCountHtml(p.id)}</span></div>
         ${!isOpen&&p.content?`<div class="post-preview">${p.content}</div>`:''}
       </div>
       <div class="post-body ${isOpen?'open':''}">
@@ -671,7 +694,7 @@ window.saveRecord=async function(){
   if(!nick){alert('닉네임을 입력해주세요');return;}if(!pw&&!editId){alert('비밀번호를 입력해주세요');return;}if(!theme){alert('테마명을 입력해주세요');return;}
   const r={nick,pos:posVal,theme,shop:document.getElementById('f-shop').value.trim(),date:document.getElementById('f-date').value,party:document.getElementById('f-party').value,hint:document.getElementById('f-hint').value,genre:document.getElementById('f-genre').value.trim(),result:resultVal,rec:recVal,rating:ratingVal,diff:diffVal,horror:horrorVal,actor:actorVal,memo:document.getElementById('f-memo').value.trim(),updatedAt:Date.now()};
   if(pw)r.pwHash=await hashPw(pw);
-  try{if(editId){const ex=records.find(x=>x.id===editId);if(ex&&!pw)r.pwHash=ex.pwHash;r.createdAt=ex?ex.createdAt:Date.now();await setDoc(doc(db,'records',editId),r);}else{r.createdAt=Date.now();await addDoc(collection(db,'records'),r);}closeModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
+  try{if(editId){const ex=records.find(x=>x.id===editId);if(ex&&!pw)r.pwHash=ex.pwHash;r.createdAt=ex?ex.createdAt:Date.now();await setDoc(doc(db,'records',editId),r);}else{r.createdAt=Date.now();markSeen((await addDoc(collection(db,'records'),r)).id);}closeModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
 }
 window.deleteRecord=async function(){if(!confirm('이 기록을 삭제할까요?'))return;try{await deleteDoc(doc(db,'records',editId));closeModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');}}
 
@@ -822,7 +845,7 @@ window.saveRankCard=async function(){
   if(!validItems.length){alert('테마명을 하나 이상 입력해주세요');return;}
   const r={nick,title,items:validItems,type:rankInnerTab,date:new Date().toLocaleDateString('ko-KR'),updatedAt:Date.now()};
   if(pw)r.pwHash=await hashPw(pw);
-  try{if(editRankId){const ex=rankCards.find(x=>x.id===editRankId);if(ex&&!pw)r.pwHash=ex.pwHash;r.createdAt=ex?ex.createdAt:Date.now();r.type=ex?ex.type:rankInnerTab;await setDoc(doc(db,'rankCards',editRankId),r);}else{r.createdAt=Date.now();await addDoc(collection(db,'rankCards'),r);}closeRankModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
+  try{if(editRankId){const ex=rankCards.find(x=>x.id===editRankId);if(ex&&!pw)r.pwHash=ex.pwHash;r.createdAt=ex?ex.createdAt:Date.now();r.type=ex?ex.type:rankInnerTab;await setDoc(doc(db,'rankCards',editRankId),r);}else{r.createdAt=Date.now();markSeen((await addDoc(collection(db,'rankCards'),r)).id);}closeRankModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
 }
 window.deleteRankCard=async function(){if(!confirm('이 랭킹을 삭제할까요?'))return;try{await deleteDoc(doc(db,'rankCards',editRankId));closeRankModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');}}
 
@@ -836,7 +859,7 @@ window.savePost=async function(){
   const nick=document.getElementById('p-nick').value.trim(),pw=document.getElementById('p-pw').value,title=document.getElementById('p-title').value.trim(),content=document.getElementById('p-content').value.trim();
   if(!nick){alert('닉네임을 입력해주세요');return;}if(!pw&&!editPostId){alert('비밀번호를 입력해주세요');return;}if(!title){alert('제목을 입력해주세요');return;}if(!content){alert('내용을 입력해주세요');return;}
   const p={nick,title,content,date:new Date().toLocaleDateString('ko-KR'),updatedAt:Date.now()};if(pw)p.pwHash=await hashPw(pw);
-  try{if(editPostId){const ex=posts.find(x=>x.id===editPostId);if(ex&&!pw)p.pwHash=ex.pwHash;p.createdAt=ex?ex.createdAt:Date.now();await setDoc(doc(db,'posts',editPostId),p);}else{p.createdAt=Date.now();await addDoc(collection(db,'posts'),p);}closePostModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
+  try{if(editPostId){const ex=posts.find(x=>x.id===editPostId);if(ex&&!pw)p.pwHash=ex.pwHash;p.createdAt=ex?ex.createdAt:Date.now();await setDoc(doc(db,'posts',editPostId),p);}else{p.createdAt=Date.now();markSeen((await addDoc(collection(db,'posts'),p)).id);}closePostModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
 }
 window.deletePost=async function(){if(!confirm('이 글을 삭제할까요?'))return;try{await deleteDoc(doc(db,'posts',editPostId));closePostModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');}}
 
@@ -868,6 +891,8 @@ async function migrateData(){
   try{for(const r of initData){const {id,...data}=r;await setDoc(doc(db,'records',id),data);}localStorage.setItem('pricey_migrated','1');showToast('기존 데이터 가져왔어요 ✅');}catch(e){console.error('마이그레이션 실패',e);}
 }
 migrateData();
+
+['renderRecords','renderRankCards','renderPosts'].forEach(n=>{const f=window[n];window[n]=function(...a){const r=f.apply(this,a);updateNavDots();return r;};});
 </script>
 </body>
 </html>
