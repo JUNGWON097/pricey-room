@@ -832,7 +832,7 @@ function postCardHtml(p){
       </div>
       <div class="post-body ${isOpen?'open':''}">
         <div class="post-content rich">${postBodyHtml(p)}</div>
-        <div class="comment-section" style="padding:0.75rem 0 0">
+        <div class="comment-section" style="padding:0.85rem 0 0;margin-top:0.85rem">
           ${cmts.length?`<div class="comment-list">${cmts.map(renderComment).join('')}</div>`:''}
           <div class="comment-input-row"><textarea class="comment-input" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" id="ci-post-${p.id}" placeholder="댓글을 남겨요... (Shift+Enter 등록)"></textarea><button class="comment-submit" onclick="submitComment('${p.id}','ci-post-${p.id}')">등록</button></div>
         </div>
