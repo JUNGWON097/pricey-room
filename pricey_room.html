@@ -12,6 +12,7 @@
 <title>갇힘일지 👻</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
+html{overflow-y:scroll;scrollbar-gutter:stable;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;background:#f7f5f0;color:#1a1a1a;min-height:100vh;padding-bottom:70px;}
 
 .header{background:#fff;border-bottom:1px solid #e8e4dc;padding:1.1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
@@ -744,7 +745,7 @@ function rankCardHtml(rc){
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div>
             <div class="rank-list-title">${rc.title||''}${dotHtml(rc.id,rc.createdAt)}</div>
-            <div style="font-size:0.7rem;color:#bbb;margin-bottom:0.5rem">by ${rc.nick||''} · ${rc.date||''} · <span style="color:#999">${cmtCountHtml(rc.id)}</span></div>
+            <div style="font-size:0.7rem;color:#bbb;margin-bottom:0.5rem">by ${rc.nick||''} · ${fmtDT(rc.createdAt,rc.date)} · <span style="color:#999">${cmtCountHtml(rc.id)}</span></div>
           </div>
           <div style="position:relative"><button class="kebab-btn" onclick="toggleKebab(event,'rank-${rc.id}')">⋯</button>
             <div class="kebab-menu" id="kebab-rank-${rc.id}" style="display:none"><button class="kebab-item" onclick="onRankEditClick(event,'${rc.id}')">수정하기</button></div>
@@ -792,7 +793,7 @@ function postCardHtml(p){
             <div class="kebab-menu" id="kebab-post-${p.id}" style="display:none"><button class="kebab-item" onclick="onPostEditClick(event,'${p.id}')">수정하기</button></div>
           </div>
         </div>
-        <div class="post-meta-row"><span class="post-nick">${p.nick||''}</span><span class="post-date">${p.date||''}</span><span class="comment-count">${cmtCountHtml(p.id)}</span></div>
+        <div class="post-meta-row"><span class="post-nick">${p.nick||''}</span><span class="post-date">${fmtDT(p.createdAt,p.date)}</span><span class="comment-count">${cmtCountHtml(p.id)}</span></div>
         ${!isOpen&&p.content?`<div class="post-preview">${p.content}</div>`:''}
       </div>
       <div class="post-body ${isOpen?'open':''}">
@@ -811,6 +812,11 @@ const REACTIONS=[['up','👍'],['down','👎'],['heart','❤️'],['angry','😡
 let openReactPicker=null, openWho=null;
 function myNick(){return me.nick;}
 function updateMeBtn(){const b=document.getElementById('me-btn');if(b)b.textContent=me.nick?'👤 '+me.nick:'👤 로그인';}
+function fmtDT(ts,fallback){if(!ts||ts<1e11)return fallback||'';const d=new Date(ts),n=new Date(),p=x=>String(x).padStart(2,'0');
+  const tm=`${p(d.getHours())}:${p(d.getMinutes())}`;
+  if(d.toDateString()===n.toDateString())return `오늘 ${tm}`;
+  const y=new Date(n);y.setDate(n.getDate()-1);if(d.toDateString()===y.toDateString())return `어제 ${tm}`;
+  return `${d.getFullYear()!==n.getFullYear()?d.getFullYear()+'.':''}${d.getMonth()+1}.${d.getDate()} ${tm}`;}
 function esc(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function legacyReacts(){try{return JSON.parse(localStorage.getItem('myReacts')||'{}');}catch(e){return {};}}
 function saveLegacy(m){try{localStorage.setItem('myReacts',JSON.stringify(m));}catch(e){}}
@@ -831,7 +837,7 @@ function renderComment(c){
   const body=editingCmt===c.id
     ?`<div class="comment-input-row cmt-edit-row"><textarea class="comment-input" id="ce-${c.id}" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">${esc(c.text)}</textarea><button class="comment-submit" onclick="saveCmtEdit(event,'${c.id}')">저장</button></div><div class="cmt-edit-actions"><button type="button" onclick="cancelCmtEdit(event,'${c.id}')">취소</button><button type="button" class="danger" onclick="deleteCmt(event,'${c.id}')">삭제</button></div>`
     :`<div class="comment-text">${c.text}${c.editedAt?'<span class="cmt-edited"> (수정됨)</span>':''}</div>`;
-  return `<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${c.date||''}${editBtn}</span></div>${body}<div class="react-row">${chips}<button type="button" class="react-add" onclick="toggleReactPicker(event,'${c.id}')">☺+</button></div>${who}${picker}</div>`;
+  return `<div class="comment-item"><div class="comment-header"><span class="comment-nick">${c.nick}</span><span class="comment-date">${fmtDT(c.createdAt,c.date)}${editBtn}</span></div>${body}<div class="react-row">${chips}<button type="button" class="react-add" onclick="toggleReactPicker(event,'${c.id}')">☺+</button></div>${who}${picker}</div>`;
 }
 function rerenderAll(){renderRecords();renderPosts();renderRankCards();renderNew();}
 window.toggleReactPicker=function(e,id){e.stopPropagation();openReactPicker=openReactPicker===id?null:id;rerenderAll();}
