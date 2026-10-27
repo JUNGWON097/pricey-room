@@ -16,6 +16,7 @@ html{overflow-y:scroll;scrollbar-gutter:stable;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;background:#f7f5f0;color:#1a1a1a;min-height:100vh;padding-bottom:70px;}
 
 .header{background:#fff;border-bottom:1px solid #e8e4dc;padding:1.1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+.header-left{cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .header-left h1{font-size:1.05rem;font-weight:600;letter-spacing:-0.02em;}
 .header-left p{font-size:0.72rem;color:#999;margin-top:2px;}
 .add-btn{background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:0.45rem 0.9rem;font-size:0.82rem;cursor:pointer;font-family:inherit;}
@@ -37,6 +38,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .search-wrap{padding:0.75rem 1.25rem 0.5rem;position:relative;}
 .search-input{width:100%;border:1px solid #e0ddd6;border-radius:10px;padding:0.5rem 0.85rem 0.5rem 2.2rem;font-size:0.85rem;font-family:inherit;outline:none;background:#fff;}
 .search-input:focus{border-color:#1a1a1a;}
+.search-input{-webkit-appearance:none;appearance:none;}
+.search-input:-webkit-autofill{-webkit-box-shadow:0 0 0 40px #fff inset;}
 .search-icon{position:absolute;left:2rem;top:50%;transform:translateY(-50%);color:#bbb;pointer-events:none;}
 
 .controls-bar{padding:0 1.25rem 0.75rem;display:flex;align-items:center;gap:6px;}
@@ -267,7 +270,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 <body>
 
 <div class="header">
-  <div class="header-left">
+  <div class="header-left" onclick="goHome()" title="처음 화면으로">
     <h1>👻 갇힘일지</h1>
     <p id="total-sub">불러오는 중...</p>
   </div>
@@ -286,7 +289,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
   </div>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
-    <input class="search-input" id="record-search" placeholder="테마, 매장, 작성자 검색..." oninput="renderRecords()">
+    <input class="search-input" type="search" name="q-record-search" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore id="record-search" placeholder="테마, 매장, 작성자 검색..." oninput="renderRecords()">
   </div>
   <div class="controls-bar">
     <div class="filter-bar">
@@ -312,7 +315,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
   </div>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
-    <input class="search-input" id="rank-search" placeholder="제목, 작성자 검색..." oninput="renderRankCards()">
+    <input class="search-input" type="search" name="q-rank-search" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore id="rank-search" placeholder="제목, 작성자 검색..." oninput="renderRankCards()">
   </div>
   <div class="rank-cards" id="rank-cards-list"><div class="loading">불러오는 중...</div></div>
 </div>
@@ -321,7 +324,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 <div class="tab-panel" id="panel-free">
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
-    <input class="search-input" id="free-search" placeholder="제목, 작성자 검색..." oninput="renderPosts()">
+    <input class="search-input" type="search" name="q-free-search" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore id="free-search" placeholder="제목, 작성자 검색..." oninput="renderPosts()">
   </div>
   <div class="post-list" id="post-list"><div class="loading">불러오는 중...</div></div>
 </div>
@@ -339,8 +342,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
   <div class="modal">
     <div class="modal-title" id="modal-title">새 기록 추가</div>
     <div class="form-row-2">
-      <div><label class="form-label">닉네임 *</label><input class="form-input" id="f-nick" placeholder="예: 정원"></div>
-      <div><label class="form-label">비밀번호 *</label><input class="form-input" id="f-pw" type="password" placeholder="수정 시 필요해요"></div>
+      <div><label class="form-label">닉네임 *</label><input class="form-input" id="f-nick" autocomplete="off" placeholder="예: 정원"></div>
+      <div><label class="form-label">비밀번호 *</label><input class="form-input" id="f-pw" type="password" autocomplete="new-password" placeholder="수정 시 필요해요"></div>
     </div>
     <div class="form-row">
       <label class="form-label">포지션</label>
@@ -412,8 +415,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
   <div class="modal">
     <div class="modal-title" id="rank-modal-title">랭킹 작성</div>
     <div class="form-row-2">
-      <div><label class="form-label">닉네임 *</label><input class="form-input" id="r-nick" placeholder="예: 정원"></div>
-      <div><label class="form-label">비밀번호 *</label><input class="form-input" id="r-pw" type="password" placeholder="수정 시 필요해요"></div>
+      <div><label class="form-label">닉네임 *</label><input class="form-input" id="r-nick" autocomplete="off" placeholder="예: 정원"></div>
+      <div><label class="form-label">비밀번호 *</label><input class="form-input" id="r-pw" type="password" autocomplete="new-password" placeholder="수정 시 필요해요"></div>
     </div>
     <div class="form-row"><label class="form-label">제목 *</label><input class="form-input" id="r-title" placeholder="예: 정원이의 공포도 순위"></div>
     <div class="form-row">
@@ -434,8 +437,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
   <div class="modal">
     <div class="modal-title" id="post-modal-title">새 글 쓰기</div>
     <div class="form-row-2">
-      <div><label class="form-label">닉네임 *</label><input class="form-input" id="p-nick" placeholder="예: 정원"></div>
-      <div><label class="form-label">비밀번호 *</label><input class="form-input" id="p-pw" type="password" placeholder="수정 시 필요해요"></div>
+      <div><label class="form-label">닉네임 *</label><input class="form-input" id="p-nick" autocomplete="off" placeholder="예: 정원"></div>
+      <div><label class="form-label">비밀번호 *</label><input class="form-input" id="p-pw" type="password" autocomplete="new-password" placeholder="수정 시 필요해요"></div>
     </div>
     <div class="form-row"><label class="form-label">제목 *</label><input class="form-input" id="p-title" placeholder="제목을 입력해주세요"></div>
     <div class="form-row"><label class="form-label">내용 *</label>
@@ -466,20 +469,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
   <div class="pw-modal">
     <h2>로그인</h2>
     <p style="font-size:0.78rem;color:#888;line-height:1.6;margin:0.4rem 0 0.9rem">닉네임과 비밀번호로 어느 기기에서든<br>같은 알림·읽음 상태를 볼 수 있어요.<br>처음 쓰는 닉네임이면 바로 가입돼요.</p>
-    <input class="form-input" id="login-nick" placeholder="닉네임">
-    <input class="form-input" id="login-pw" type="password" placeholder="비밀번호" style="margin-top:6px" onkeydown="if(event.key==='Enter'&&!event.isComposing)doLogin()">
+    <form id="login-form" autocomplete="on" onsubmit="event.preventDefault();doLogin()">
+    <input class="form-input" id="login-nick" name="username" autocomplete="username" placeholder="닉네임">
+    <input class="form-input" id="login-pw" name="password" type="password" autocomplete="current-password" placeholder="비밀번호" style="margin-top:6px">
     <div class="pw-err" id="login-err"></div>
     <div class="form-btns" style="margin-top:1rem">
-      <button class="btn-cancel" onclick="closeLogin(false)">취소</button>
-      <button class="btn-save" onclick="doLogin()">로그인</button>
+      <button type="button" class="btn-cancel" onclick="closeLogin(false)">취소</button>
+      <button type="submit" class="btn-save">로그인</button>
     </div>
+    </form>
   </div>
 </div>
 <div class="pw-modal-bg" id="pw-modal-bg" style="display:none">
   <div class="pw-modal">
     <h2>비밀번호 확인</h2>
     <p id="pw-modal-desc">수정하려면 비밀번호를 입력하세요</p>
-    <input class="form-input" id="pw-input" type="password" placeholder="비밀번호">
+    <input class="form-input" id="pw-input" type="password" autocomplete="new-password" placeholder="비밀번호">
     <div class="pw-err" id="pw-err">비밀번호가 맞지 않아요</div>
     <div class="form-btns" style="margin-top:1rem">
       <button class="btn-cancel" onclick="closePwModal()">취소</button>
@@ -676,6 +681,7 @@ window.goNotif=function(e,kind,id){
 }
 document.addEventListener('click',e=>{if(notifOpen&&!e.target.closest('#notif-panel')&&!e.target.closest('#bell-btn')){notifOpen=false;renderNotif();}});
 
+window.goHome=function(){window.scrollTo(0,0);location.replace(location.pathname);};
 window.switchTab=function(tab){
   currentTab=tab;
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
@@ -1236,6 +1242,12 @@ document.addEventListener('keydown',e=>{
 });
 updateMeBtn();
 startUserSync();
+
+// 브라우저 자동완성이 검색창에 닉네임을 넣는 것 방지
+(()=>{const ids=['record-search','rank-search','free-search'];const typed={};
+  ids.forEach(id=>{const el=document.getElementById(id);if(!el)return;el.addEventListener('keydown',()=>typed[id]=true);el.addEventListener('paste',()=>typed[id]=true);});
+  const clean=()=>{let ch=false;ids.forEach(id=>{const el=document.getElementById(id);if(el&&el.value&&!typed[id]){el.value='';ch=true;}});if(ch)rerenderAll();};
+  [300,1000,2500].forEach(t=>setTimeout(clean,t));window.addEventListener('pageshow',()=>setTimeout(clean,300));})();
 </script>
 </body>
 </html>
