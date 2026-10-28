@@ -682,7 +682,15 @@ window.goNotif=function(e,kind,id){
 document.addEventListener('click',e=>{if(notifOpen&&!e.target.closest('#notif-panel')&&!e.target.closest('#bell-btn')){notifOpen=false;renderNotif();}});
 
 window.goHome=function(){window.scrollTo(0,0);location.replace(location.pathname);};
+// ── 작성 중인 내용 보존 (저장 안 하고 닫아도 탭 이동 전까지 유지) ──
+const draftKey={rec:null,rank:null,post:null};
+// 드래그하다 바깥에서 손을 떼도 닫히지 않게: 누르기 시작한 곳도 바깥이어야 닫힘
+let pressStart=null;
+document.addEventListener('pointerdown',e=>{pressStart=e.target;},true);
+document.addEventListener('touchstart',e=>{pressStart=e.target;},{capture:true,passive:true});
+function draftToast(){showToast('작성하던 내용은 그대로 있어요 · 다시 열면 이어서 쓸 수 있어요');}
 window.switchTab=function(tab){
+  if(tab!==currentTab){draftKey.rec=null;draftKey.rank=null;draftKey.post=null;}
   currentTab=tab;
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
@@ -969,15 +977,15 @@ function openEditModal(id){
   document.getElementById('modal-bg').style.display='flex';
 }
 window.closeModal=function(){document.getElementById('modal-bg').style.display='none';}
-window.handleBgClick=function(e){if(e.target===document.getElementById('modal-bg'))closeModal();}
+window.handleBgClick=function(e){if(e.target===document.getElementById('modal-bg')&&pressStart===e.target){closeModal();draftToast();}}
 window.saveRecord=async function(){
   const nick=document.getElementById('f-nick').value.trim(),pw=document.getElementById('f-pw').value,theme=document.getElementById('f-theme').value.trim();
   if(!nick){alert('닉네임을 입력해주세요');return;}if(!pw&&!editId){alert('비밀번호를 입력해주세요');return;}if(!theme){alert('테마명을 입력해주세요');return;}
   const r={nick,pos:posVal,theme,shop:document.getElementById('f-shop').value.trim(),date:document.getElementById('f-date').value,party:document.getElementById('f-party').value,hint:document.getElementById('f-hint').value,genre:document.getElementById('f-genre').value.trim(),result:resultVal,rec:recVal,rating:ratingVal,diff:diffVal,horror:horrorVal,actor:actorVal,memo:document.getElementById('f-memo').value.trim(),updatedAt:Date.now()};
   if(pw)r.pwHash=await hashPw(pw);
-  try{if(editId){const ex=records.find(x=>x.id===editId);if(ex&&!pw)r.pwHash=ex.pwHash;r.createdAt=ex?ex.createdAt:Date.now();await setDoc(doc(db,'records',editId),r);}else{r.createdAt=Date.now();markSeen((await addDoc(collection(db,'records'),r)).id);}closeModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
+  try{if(editId){const ex=records.find(x=>x.id===editId);if(ex&&!pw)r.pwHash=ex.pwHash;r.createdAt=ex?ex.createdAt:Date.now();await setDoc(doc(db,'records',editId),r);}else{r.createdAt=Date.now();markSeen((await addDoc(collection(db,'records'),r)).id);}draftKey.rec=null;closeModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
 }
-window.deleteRecord=async function(){if(!confirm('이 기록을 삭제할까요?'))return;try{await deleteDoc(doc(db,'records',editId));closeModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');}}
+window.deleteRecord=async function(){if(!confirm('이 기록을 삭제할까요?'))return;try{await deleteDoc(doc(db,'records',editId));draftKey.rec=null;closeModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');}}
 
 // 랭킹 CRUD
 window.openRankModal=function(){
@@ -1117,7 +1125,7 @@ window.removeRankItem=function(btn){
   renderRankItems();
 }
 window.closeRankModal=function(){document.getElementById('rank-modal-bg').style.display='none';}
-window.handleRankBgClick=function(e){if(e.target===document.getElementById('rank-modal-bg'))closeRankModal();}
+window.handleRankBgClick=function(e){if(e.target===document.getElementById('rank-modal-bg')&&pressStart===e.target){closeRankModal();draftToast();}}
 window.saveRankCard=async function(){
   syncRankItemsFromDOM();
   const nick=document.getElementById('r-nick').value.trim(),pw=document.getElementById('r-pw').value,title=document.getElementById('r-title').value.trim();
@@ -1126,9 +1134,9 @@ window.saveRankCard=async function(){
   if(!validItems.length){alert('테마명을 하나 이상 입력해주세요');return;}
   const r={nick,title,items:validItems,type:rankInnerTab,date:new Date().toLocaleDateString('ko-KR'),updatedAt:Date.now()};
   if(pw)r.pwHash=await hashPw(pw);
-  try{if(editRankId){const ex=rankCards.find(x=>x.id===editRankId);if(ex&&!pw)r.pwHash=ex.pwHash;r.createdAt=ex?ex.createdAt:Date.now();r.type=ex?ex.type:rankInnerTab;await setDoc(doc(db,'rankCards',editRankId),r);}else{r.createdAt=Date.now();markSeen((await addDoc(collection(db,'rankCards'),r)).id);}closeRankModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
+  try{if(editRankId){const ex=rankCards.find(x=>x.id===editRankId);if(ex&&!pw)r.pwHash=ex.pwHash;r.createdAt=ex?ex.createdAt:Date.now();r.type=ex?ex.type:rankInnerTab;await setDoc(doc(db,'rankCards',editRankId),r);}else{r.createdAt=Date.now();markSeen((await addDoc(collection(db,'rankCards'),r)).id);}draftKey.rank=null;closeRankModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
 }
-window.deleteRankCard=async function(){if(!confirm('이 랭킹을 삭제할까요?'))return;try{await deleteDoc(doc(db,'rankCards',editRankId));closeRankModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');}}
+window.deleteRankCard=async function(){if(!confirm('이 랭킹을 삭제할까요?'))return;try{await deleteDoc(doc(db,'rankCards',editRankId));draftKey.rank=null;closeRankModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');}}
 
 // 자유게시판 CRUD
 // ── 글쓰기 서식 편집기 ──
@@ -1184,14 +1192,14 @@ window.openPostModal=function(){editPostId=null;document.getElementById('post-mo
 window.onPostEditClick=function(e,id){e.stopPropagation();const p=posts.find(x=>x.id===id);if(!p)return;showPwModal(id,()=>openEditPostModal(id),p.nick);}
 function openEditPostModal(id){const p=posts.find(x=>x.id===id);if(!p)return;editPostId=id;document.getElementById('post-modal-title').textContent='글 수정';document.getElementById('post-btn-delete').style.display='';document.getElementById('p-nick').value=p.nick||'';document.getElementById('p-pw').value='';document.getElementById('p-title').value=p.title||'';rteSet(postBodyHtml(p));document.getElementById('post-modal-bg').style.display='flex';}
 window.closePostModal=function(){document.getElementById('post-modal-bg').style.display='none';}
-window.handlePostBgClick=function(e){if(e.target===document.getElementById('post-modal-bg'))closePostModal();}
+window.handlePostBgClick=function(e){if(e.target===document.getElementById('post-modal-bg')&&pressStart===e.target){closePostModal();draftToast();}}
 window.savePost=async function(){
   const nick=document.getElementById('p-nick').value.trim(),pw=document.getElementById('p-pw').value,title=document.getElementById('p-title').value.trim(),content=rteEl().innerText.replace(/\n{3,}/g,'\n\n').trim(),contentHtml=sanitizeRich(rteEl().innerHTML);
   if(!nick){alert('닉네임을 입력해주세요');return;}if(!pw&&!editPostId){alert('비밀번호를 입력해주세요');return;}if(!title){alert('제목을 입력해주세요');return;}if(!content){alert('내용을 입력해주세요');return;}
   const p={nick,title,content,contentHtml,date:new Date().toLocaleDateString('ko-KR'),updatedAt:Date.now()};if(pw)p.pwHash=await hashPw(pw);
-  try{if(editPostId){const ex=posts.find(x=>x.id===editPostId);if(ex&&!pw)p.pwHash=ex.pwHash;p.createdAt=ex?ex.createdAt:Date.now();await setDoc(doc(db,'posts',editPostId),p);}else{p.createdAt=Date.now();markSeen((await addDoc(collection(db,'posts'),p)).id);}closePostModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
+  try{if(editPostId){const ex=posts.find(x=>x.id===editPostId);if(ex&&!pw)p.pwHash=ex.pwHash;p.createdAt=ex?ex.createdAt:Date.now();await setDoc(doc(db,'posts',editPostId),p);}else{p.createdAt=Date.now();markSeen((await addDoc(collection(db,'posts'),p)).id);}draftKey.post=null;closePostModal();showToast('저장됐어요 ✅');}catch(e){alert('저장 중 오류');console.error(e);}
 }
-window.deletePost=async function(){if(!confirm('이 글을 삭제할까요?'))return;try{await deleteDoc(doc(db,'posts',editPostId));closePostModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');}}
+window.deletePost=async function(){if(!confirm('이 글을 삭제할까요?'))return;try{await deleteDoc(doc(db,'posts',editPostId));draftKey.post=null;closePostModal();showToast('삭제됐어요');}catch(e){alert('삭제 중 오류');}}
 
 // 폼 헬퍼
 window.toggleResult=function(v){setResultUI(v);}
@@ -1248,6 +1256,17 @@ startUserSync();
   ids.forEach(id=>{const el=document.getElementById(id);if(!el)return;el.addEventListener('keydown',()=>typed[id]=true);el.addEventListener('paste',()=>typed[id]=true);});
   const clean=()=>{let ch=false;ids.forEach(id=>{const el=document.getElementById(id);if(el&&el.value&&!typed[id]){el.value='';ch=true;}});if(ch)rerenderAll();};
   [300,1000,2500].forEach(t=>setTimeout(clean,t));window.addEventListener('pageshow',()=>setTimeout(clean,300));})();
+
+// 모달 열기: 같은 작성 건이면 입력값 초기화하지 않고 그대로 다시 보여줌
+(()=>{
+  const show=id=>{document.getElementById(id).style.display='flex';};
+  const _add=window.openAddModal;window.openAddModal=function(){if(draftKey.rec==='new'){show('modal-bg');return;}_add();draftKey.rec='new';};
+  const _edit=openEditModal;openEditModal=function(id){if(draftKey.rec===id){show('modal-bg');return;}_edit(id);draftKey.rec=id;};
+  const _rank=window.openRankModal;window.openRankModal=function(){const k='new:'+rankInnerTab;if(draftKey.rank===k){show('rank-modal-bg');return;}_rank();draftKey.rank=k;};
+  const _erank=openEditRankModal;openEditRankModal=function(id){if(draftKey.rank===id){show('rank-modal-bg');return;}_erank(id);draftKey.rank=id;};
+  const _post=window.openPostModal;window.openPostModal=function(){if(draftKey.post==='new'){show('post-modal-bg');return;}_post();draftKey.post='new';};
+  const _epost=openEditPostModal;openEditPostModal=function(id){if(draftKey.post===id){show('post-modal-bg');return;}_epost(id);draftKey.post=id;};
+})();
 </script>
 </body>
 </html>
