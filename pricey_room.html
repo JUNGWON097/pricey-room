@@ -265,6 +265,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:0.6rem 1.2rem;border-radius:20px;font-size:0.82rem;z-index:400;opacity:0;transition:opacity 0.3s;pointer-events:none;}
 .toast.show{opacity:1;}
 @media(max-width:400px){.stats{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:640px){
+  .modal-bg{align-items:center;padding:2rem 1rem;}
+  .modal{border-radius:18px;max-width:760px;min-height:min(600px,86vh);max-height:90vh;padding:1.75rem 1.75rem;}
+  .rte-body{min-height:320px;max-height:52vh;}
+}
 </style>
 </head>
 <body>
@@ -677,7 +682,7 @@ window.goNotif=function(e,kind,id){
   if(kind==='rank'){const it=rankCards.find(x=>x.id===id);const ty=(it&&it.type)||'horror';setRankInnerTab(ty,document.getElementById('rit-'+ty));}
   openDetailId=kind==='record'?id:kind==='rank'?'rank-'+id:'post-'+id;
   rerenderAll();
-  setTimeout(()=>{const h=document.querySelector(`[onclick="toggleDetail('${openDetailId}')"]`);if(h)h.scrollIntoView({behavior:'smooth',block:'start'});},80);
+  setTimeout(()=>focusCard(openDetailId),80);
 }
 document.addEventListener('click',e=>{if(notifOpen&&!e.target.closest('#notif-panel')&&!e.target.closest('#bell-btn')){notifOpen=false;renderNotif();}});
 
@@ -931,7 +936,15 @@ window.submitComment=async function(targetId,inputId){
   catch(e){console.error(e);cmtDrafts[inputId]=text;const cur=document.getElementById(inputId);if(cur){cur.value=text;}showToast('댓글을 등록하지 못했어요');}
 }
 
-window.toggleDetail=function(id){openDetailId=openDetailId===id?null:id;rerenderAll();}
+window.toggleDetail=function(id){openDetailId=openDetailId===id?null:id;rerenderAll();if(openDetailId)focusCard(openDetailId);}
+function focusCard(id){
+  requestAnimationFrame(()=>{
+    const h=document.querySelector(`[onclick="toggleDetail('${id}')"]`);if(!h)return;
+    const card=h.closest('.record-card,.rank-list-card,.post-card')||h;
+    const hd=document.querySelector('.header');const off=(hd?hd.getBoundingClientRect().height:0)+10;
+    window.scrollTo({top:card.getBoundingClientRect().top+window.scrollY-off,behavior:'smooth'});
+  });
+}
 window.setFilter=function(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderRecords();}
 window.toggleKebab=function(e,id){
   e.stopPropagation();
