@@ -1226,11 +1226,13 @@ window.toggleHorror=function(v){horrorVal=horrorVal===v?0:v;setHorrorUI(horrorVa
 function setHorrorUI(v){horrorVal=v||0;for(let i=1;i<=5;i++)document.getElementById('h-'+i).classList.toggle('active',i<=horrorVal&&horrorVal>0);}
 window.toggleActor=function(v){setActorUI(v);}
 function setActorUI(v){actorVal=v===undefined?'':v;['y','n',''].forEach(x=>document.getElementById('a-'+(x===''?'none':x)).classList.toggle('active',x===actorVal));}
-const POSITIONS=[['','선택 안 함'],['쫄쫄','😭 쫄쫄'],['쫄','😱 쫄'],['전진쫄','🏃 전진쫄'],['쫄탱','😰 쫄탱'],['비명탱','🗣️ 비명탱'],['탱','🛡️ 탱'],['탱탱','💪 탱탱']];
-function posLabel(v){const f=POSITIONS.find(x=>x[0]===v);return f?f[1]:v;}
+const POSITIONS=[['','선택 안 함'],['쫄쫄','😭 쫄쫄'],['쫄','😱 쫄'],['전진쫄','🏃 전진쫄'],['마지못탱','😰 마지못탱'],['비명탱','🗣️ 비명탱'],['탱','🛡️ 탱'],['탱탱','💪 탱탱']];
+const POS_ALIAS={'쫄탱':'마지못탱'};
+function normPos(v){return POS_ALIAS[v]||v;}
+function posLabel(v){v=normPos(v);const f=POSITIONS.find(x=>x[0]===v);return f?f[1]:v;}
 document.getElementById('pos-group').innerHTML=POSITIONS.map(([v,l])=>`<button type="button" class="toggle-btn pos-btn${v===''?' active':''}" data-pos="${v}" onclick="togglePos('${v}')">${l}</button>`).join('');
 window.togglePos=function(v){setPosUI(v);}
-function setPosUI(v){posVal=v===undefined?'':v;document.querySelectorAll('.pos-btn').forEach(b=>b.classList.toggle('active',b.dataset.pos===posVal));}
+function setPosUI(v){posVal=v===undefined?'':normPos(v);document.querySelectorAll('.pos-btn').forEach(b=>b.classList.toggle('active',b.dataset.pos===posVal));}
 
 // 마이그레이션
 async function migrateData(){
