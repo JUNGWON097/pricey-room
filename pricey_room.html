@@ -199,6 +199,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .rte-sep{width:1px;height:18px;background:#e0ddd6;margin:0 3px;}
 .rte-size{height:28px;border:1px solid #e0ddd6;border-radius:6px;background:#fff;font-size:0.78rem;font-family:inherit;padding:0 4px;color:#444;}
 .rte-a{line-height:1;font-weight:600;}
+.rte-szb{min-width:26px;padding:0 4px;}
+.rte-clear{font-size:0.75rem;color:#666;white-space:nowrap;}
 .rte-hl{background:#fff1a8;padding:1px 3px;border-radius:3px;}
 .rte-bar-c{display:block;width:14px;height:3px;background:#333;border-radius:2px;margin-top:2px;}
 .rte-pop-wrap{position:relative;}
@@ -453,10 +455,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
           <button type="button" class="rte-btn" data-cmd="italic" title="기울임" onmousedown="event.preventDefault()" onclick="rteCmd('italic')"><i>I</i></button>
           <button type="button" class="rte-btn" data-cmd="strikeThrough" title="취소선" onmousedown="event.preventDefault()" onclick="rteCmd('strikeThrough')"><s>S</s></button>
           <span class="rte-sep"></span>
-          <select class="rte-size" id="rte-size" onchange="rteSize(this.value)" title="글씨 크기"><option value="s">작게</option><option value="m" selected>보통</option><option value="l">크게</option></select>
+          <button type="button" class="rte-btn rte-szb" data-sz="s" title="작게" onmousedown="event.preventDefault()" onclick="rteSize('s')"><span style="font-size:0.7rem">가</span></button>
+          <button type="button" class="rte-btn rte-szb on" data-sz="m" title="보통" onmousedown="event.preventDefault()" onclick="rteSize('m')"><span style="font-size:0.85rem">가</span></button>
+          <button type="button" class="rte-btn rte-szb" data-sz="l" title="크게" onmousedown="event.preventDefault()" onclick="rteSize('l')"><span style="font-size:1.05rem">가</span></button>
           <span class="rte-sep"></span>
           <div class="rte-pop-wrap"><button type="button" class="rte-btn" title="글씨색" onmousedown="event.preventDefault()" onclick="rtePop(event,'fc')"><span class="rte-a">가</span><span class="rte-bar-c" id="rte-fc-bar"></span></button><div class="rte-pop" id="rte-pop-fc"><button type="button" class="sw" title="기본" style="background:#333333" onmousedown="event.preventDefault()" onclick="rteColor('fore','#333333')"></button><button type="button" class="sw" title="빨강" style="background:#d64545" onmousedown="event.preventDefault()" onclick="rteColor('fore','#d64545')"></button><button type="button" class="sw" title="주황" style="background:#e08a1e" onmousedown="event.preventDefault()" onclick="rteColor('fore','#e08a1e')"></button><button type="button" class="sw" title="초록" style="background:#2e8b57" onmousedown="event.preventDefault()" onclick="rteColor('fore','#2e8b57')"></button><button type="button" class="sw" title="파랑" style="background:#3a6fd8" onmousedown="event.preventDefault()" onclick="rteColor('fore','#3a6fd8')"></button><button type="button" class="sw" title="보라" style="background:#8b6bbf" onmousedown="event.preventDefault()" onclick="rteColor('fore','#8b6bbf')"></button><button type="button" class="sw" title="회색" style="background:#999999" onmousedown="event.preventDefault()" onclick="rteColor('fore','#999999')"></button></div></div>
           <div class="rte-pop-wrap"><button type="button" class="rte-btn" title="배경색" onmousedown="event.preventDefault()" onclick="rtePop(event,'bc')"><span class="rte-a rte-hl">가</span></button><div class="rte-pop" id="rte-pop-bc"><button type="button" class="sw sw-none" title="없음" style="background:transparent" onmousedown="event.preventDefault()" onclick="rteColor('back','transparent')"></button><button type="button" class="sw" title="노랑" style="background:#fff1a8" onmousedown="event.preventDefault()" onclick="rteColor('back','#fff1a8')"></button><button type="button" class="sw" title="분홍" style="background:#ffd9e0" onmousedown="event.preventDefault()" onclick="rteColor('back','#ffd9e0')"></button><button type="button" class="sw" title="초록" style="background:#d9f2e1" onmousedown="event.preventDefault()" onclick="rteColor('back','#d9f2e1')"></button><button type="button" class="sw" title="파랑" style="background:#dbe8ff" onmousedown="event.preventDefault()" onclick="rteColor('back','#dbe8ff')"></button><button type="button" class="sw" title="보라" style="background:#ece3fa" onmousedown="event.preventDefault()" onclick="rteColor('back','#ece3fa')"></button></div></div>
+          <span class="rte-sep"></span>
+          <button type="button" class="rte-btn rte-clear" title="선택한 글자의 효과 모두 지우기" onmousedown="event.preventDefault()" onclick="rteClear()">효과 지우기</button>
         </div>
         <div class="rte-body" id="p-content" contenteditable="true" data-ph="자유롭게 작성해요 ✍️"></div>
       </div>
@@ -1181,15 +1187,33 @@ function rteSyncBar(){
   document.querySelectorAll('.rte-btn[data-cmd]').forEach(b=>{let on=false;try{on=document.queryCommandState(b.dataset.cmd);}catch(e){}b.classList.toggle('on',on);});
   const sel=window.getSelection();let n=sel.anchorNode;if(n&&n.nodeType===3)n=n.parentElement;
   const z=n&&n.closest?n.closest('.sz-s,.sz-m,.sz-l'):null;const ed=rteEl();
-  document.getElementById('rte-size').value=z&&ed.contains(z)?z.className.slice(3):'m';
+  const cur=z&&ed.contains(z)?z.className.slice(3):'m';
+  document.querySelectorAll('.rte-szb').forEach(b=>b.classList.toggle('on',b.dataset.sz===cur));
 }
+function rteSelectNodes(nodes){if(!nodes.length)return;const r=document.createRange();r.setStartBefore(nodes[0]);r.setEndAfter(nodes[nodes.length-1]);
+  const sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);rteRange=r.cloneRange();}
+function rteUnwrap(el){const kids=[...el.childNodes];el.replaceWith(...kids);return kids;}
 window.rteCmd=function(cmd){rteRestore();document.execCommand('styleWithCSS',false,true);document.execCommand(cmd);rteSyncBar();}
 window.rteSize=function(v){rteRestore();const sel=window.getSelection();if(!sel.rangeCount||sel.isCollapsed){showToast('크기를 바꿀 글자를 먼저 선택해주세요');rteSyncBar();return;}
   document.execCommand('styleWithCSS',false,false);document.execCommand('fontSize',false,'7');
+  const made=[];
   rteEl().querySelectorAll('font[size="7"]').forEach(f=>{const sp=document.createElement('span');sp.className='sz-'+v;
     f.querySelectorAll('.sz-s,.sz-m,.sz-l').forEach(x=>x.replaceWith(...x.childNodes));
-    if(f.getAttribute('color'))sp.style.color=f.getAttribute('color');while(f.firstChild)sp.appendChild(f.firstChild);f.replaceWith(sp);});
-  rteSyncBar();}
+    if(f.getAttribute('color'))sp.style.color=f.getAttribute('color');while(f.firstChild)sp.appendChild(f.firstChild);f.replaceWith(sp);made.push(sp);});
+  rteSelectNodes(made);rteSyncBar();}
+window.rteClear=function(){rteRestore();const sel=window.getSelection();if(!sel.rangeCount||sel.isCollapsed){showToast('효과를 지울 글자를 먼저 선택해주세요');return;}
+  // 선택 부분을 표시용 font[size=7]로 감싼 뒤, 그 조각을 바깥 서식 태그 밖으로 꺼내고 안쪽 서식도 풀어 준다
+  const ed=rteEl();document.execCommand('styleWithCSS',false,false);document.execCommand('fontSize',false,'7');
+  const BLOCK={DIV:1,P:1,BR:1};const out=[];
+  ed.querySelectorAll('font[size="7"]').forEach(m=>{
+    let p=m.parentNode;
+    while(p&&p!==ed&&!BLOCK[p.tagName]){const tail=p.cloneNode(false);while(m.nextSibling)tail.appendChild(m.nextSibling);
+      p.after(m);if(tail.firstChild)m.after(tail);if(!p.firstChild)p.remove();p=m.parentNode;}
+    m.querySelectorAll('*').forEach(x=>{if(!BLOCK[x.tagName])x.dataset.rteUnwrap='1';});
+    m.querySelectorAll('[data-rte-unwrap]').forEach(x=>rteUnwrap(x));
+    out.push(...rteUnwrap(m));});
+  rteSelectNodes(out);
+  document.getElementById('rte-fc-bar').style.background='#333';rteSyncBar();}
 window.rtePop=function(e,which){e.stopPropagation();const el=document.getElementById('rte-pop-'+which);const open=el.style.display==='flex';
   document.querySelectorAll('.rte-pop').forEach(p=>p.style.display='none');el.style.display=open?'none':'flex';}
 window.rteColor=function(kind,c){rteRestore();document.execCommand('styleWithCSS',false,true);
@@ -1198,7 +1222,7 @@ window.rteColor=function(kind,c){rteRestore();document.execCommand('styleWithCSS
   document.querySelectorAll('.rte-pop').forEach(p=>p.style.display='none');}
 document.addEventListener('click',e=>{if(!e.target.closest('.rte-pop-wrap'))document.querySelectorAll('.rte-pop').forEach(p=>p.style.display='none');});
 document.addEventListener('paste',e=>{const ed=rteEl();if(!ed||!ed.contains(e.target))return;e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData('text/plain');document.execCommand('insertText',false,t);});
-function rteSet(html){const ed=rteEl();ed.innerHTML=html||'';rteRange=null;document.getElementById('rte-size').value='m';document.getElementById('rte-fc-bar').style.background='#333';}
+function rteSet(html){const ed=rteEl();ed.innerHTML=html||'';rteRange=null;document.querySelectorAll('.rte-szb').forEach(b=>b.classList.toggle('on',b.dataset.sz==='m'));document.getElementById('rte-fc-bar').style.background='#333';}
 function postBodyHtml(p){return p.contentHtml?sanitizeRich(p.contentHtml):esc(p.content||'').replace(/\n/g,'<br>');}
 
 window.openPostModal=function(){editPostId=null;document.getElementById('post-modal-title').textContent='새 글 쓰기';document.getElementById('post-btn-delete').style.display='none';document.getElementById('p-nick').value=myNick();document.getElementById('p-pw').value='';document.getElementById('p-title').value='';rteSet('');document.getElementById('post-modal-bg').style.display='flex';}
