@@ -190,6 +190,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
 .post-content.rich,.rte-body{white-space:normal;word-break:break-word;}
 .sz-s{font-size:0.75rem;}.sz-m{font-size:0.85rem;}.sz-l{font-size:1.1rem;}
 .post-content span[style*="background"],.rte-body span[style*="background"]{padding:0 2px;border-radius:3px;}
+.post-content.rich ul,.post-content.rich ol,.rte-body ul,.rte-body ol{margin:0.2rem 0;padding-left:1.4rem;}
+.post-content.rich ul,.rte-body ul{list-style:disc;}.post-content.rich ol,.rte-body ol{list-style:decimal;}
+.post-content.rich hr,.rte-body hr{border:none;border-top:1px solid #ddd8ce;margin:0.6rem 0;}
 .rte{border:1px solid #ddd;border-radius:8px;}
 .rte:focus-within{border-color:#1a1a1a;}
 .rte-bar{display:flex;align-items:center;gap:3px;padding:5px 6px;border-bottom:1px solid #eee;flex-wrap:wrap;background:#faf8f4;border-radius:8px 8px 0 0;}
@@ -461,6 +464,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
           <span class="rte-sep"></span>
           <div class="rte-pop-wrap"><button type="button" class="rte-btn" title="글씨색" onmousedown="event.preventDefault()" onclick="rtePop(event,'fc')"><span class="rte-a">가</span><span class="rte-bar-c" id="rte-fc-bar"></span></button><div class="rte-pop" id="rte-pop-fc"><button type="button" class="sw" title="기본" style="background:#333333" onmousedown="event.preventDefault()" onclick="rteColor('fore','#333333')"></button><button type="button" class="sw" title="빨강" style="background:#d64545" onmousedown="event.preventDefault()" onclick="rteColor('fore','#d64545')"></button><button type="button" class="sw" title="주황" style="background:#e08a1e" onmousedown="event.preventDefault()" onclick="rteColor('fore','#e08a1e')"></button><button type="button" class="sw" title="초록" style="background:#2e8b57" onmousedown="event.preventDefault()" onclick="rteColor('fore','#2e8b57')"></button><button type="button" class="sw" title="파랑" style="background:#3a6fd8" onmousedown="event.preventDefault()" onclick="rteColor('fore','#3a6fd8')"></button><button type="button" class="sw" title="보라" style="background:#8b6bbf" onmousedown="event.preventDefault()" onclick="rteColor('fore','#8b6bbf')"></button><button type="button" class="sw" title="회색" style="background:#999999" onmousedown="event.preventDefault()" onclick="rteColor('fore','#999999')"></button></div></div>
           <div class="rte-pop-wrap"><button type="button" class="rte-btn" title="배경색" onmousedown="event.preventDefault()" onclick="rtePop(event,'bc')"><span class="rte-a rte-hl">가</span></button><div class="rte-pop" id="rte-pop-bc"><button type="button" class="sw sw-none" title="없음" style="background:transparent" onmousedown="event.preventDefault()" onclick="rteColor('back','transparent')"></button><button type="button" class="sw" title="노랑" style="background:#fff1a8" onmousedown="event.preventDefault()" onclick="rteColor('back','#fff1a8')"></button><button type="button" class="sw" title="분홍" style="background:#ffd9e0" onmousedown="event.preventDefault()" onclick="rteColor('back','#ffd9e0')"></button><button type="button" class="sw" title="초록" style="background:#d9f2e1" onmousedown="event.preventDefault()" onclick="rteColor('back','#d9f2e1')"></button><button type="button" class="sw" title="파랑" style="background:#dbe8ff" onmousedown="event.preventDefault()" onclick="rteColor('back','#dbe8ff')"></button><button type="button" class="sw" title="보라" style="background:#ece3fa" onmousedown="event.preventDefault()" onclick="rteColor('back','#ece3fa')"></button></div></div>
+          <span class="rte-sep"></span>
+          <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="글머리 목록" onmousedown="event.preventDefault()" onclick="rteCmd('insertUnorderedList')"><svg width="16" height="14" viewBox="0 0 16 14" fill="currentColor"><circle cx="2" cy="2.5" r="1.5"/><circle cx="2" cy="7" r="1.5"/><circle cx="2" cy="11.5" r="1.5"/><rect x="5" y="1.7" width="10" height="1.6" rx="0.8"/><rect x="5" y="6.2" width="10" height="1.6" rx="0.8"/><rect x="5" y="10.7" width="10" height="1.6" rx="0.8"/></svg></button>
+          <button type="button" class="rte-btn" data-cmd="insertOrderedList" title="번호 목록" onmousedown="event.preventDefault()" onclick="rteCmd('insertOrderedList')"><svg width="16" height="14" viewBox="0 0 16 14" fill="currentColor"><text x="0" y="4.6" font-size="4.8" font-family="sans-serif" font-weight="700">1</text><text x="0" y="9.1" font-size="4.8" font-family="sans-serif" font-weight="700">2</text><text x="0" y="13.6" font-size="4.8" font-family="sans-serif" font-weight="700">3</text><rect x="5" y="1.7" width="10" height="1.6" rx="0.8"/><rect x="5" y="6.2" width="10" height="1.6" rx="0.8"/><rect x="5" y="10.7" width="10" height="1.6" rx="0.8"/></svg></button>
+          <button type="button" class="rte-btn" title="구분선" onmousedown="event.preventDefault()" onclick="rteHr()"><svg width="16" height="14" viewBox="0 0 16 14" fill="currentColor"><rect x="0" y="6.2" width="16" height="1.6" rx="0.8"/><rect x="3" y="1.5" width="10" height="1.2" rx="0.6" opacity="0.35"/><rect x="3" y="11.3" width="10" height="1.2" rx="0.6" opacity="0.35"/></svg></button>
           <span class="rte-sep"></span>
           <button type="button" class="rte-btn rte-clear" title="선택한 글자의 효과 모두 지우기" onmousedown="event.preventDefault()" onclick="rteClear()">효과 지우기</button>
         </div>
@@ -1161,7 +1168,7 @@ window.deleteRankCard=async function(){if(!confirm('이 랭킹을 삭제할까�
 // ── 글쓰기 서식 편집기 ──
 function sanitizeRich(html){
   const t=document.createElement('template');t.innerHTML=html||'';
-  const ALLOWED={B:1,STRONG:1,I:1,EM:1,S:1,STRIKE:1,DEL:1,U:1,BR:1,DIV:1,P:1,SPAN:1};
+  const ALLOWED={B:1,STRONG:1,I:1,EM:1,S:1,STRIKE:1,DEL:1,U:1,BR:1,DIV:1,P:1,SPAN:1,UL:1,OL:1,LI:1,HR:1};
   const okC=v=>/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\)|transparent)$/i.test(v);
   const walk=node=>{[...node.childNodes].forEach(ch=>{
     if(ch.nodeType===3)return;if(ch.nodeType!==1){ch.remove();return;}
@@ -1201,10 +1208,16 @@ window.rteSize=function(v){rteRestore();const sel=window.getSelection();if(!sel.
     f.querySelectorAll('.sz-s,.sz-m,.sz-l').forEach(x=>x.replaceWith(...x.childNodes));
     if(f.getAttribute('color'))sp.style.color=f.getAttribute('color');while(f.firstChild)sp.appendChild(f.firstChild);f.replaceWith(sp);made.push(sp);});
   rteSelectNodes(made);rteSyncBar();}
+window.rteHr=function(){rteRestore();const before=new Set(rteEl().querySelectorAll('hr'));document.execCommand('insertHorizontalRule');
+  // 구분선 바로 뒤에서 이어 쓸 수 있게 빈 줄을 하나 둔다
+  const hr=[...rteEl().querySelectorAll('hr')].find(h=>!before.has(h));if(hr){
+    if(!hr.nextSibling||hr.nextSibling.nodeName==='HR'){const d=document.createElement('div');d.appendChild(document.createElement('br'));hr.after(d);}
+    const r=document.createRange();r.setStart(hr.nextSibling,0);r.collapse(true);const s=window.getSelection();s.removeAllRanges();s.addRange(r);rteRange=r.cloneRange();}
+  rteSyncBar();}
 window.rteClear=function(){rteRestore();const sel=window.getSelection();if(!sel.rangeCount||sel.isCollapsed){showToast('효과를 지울 글자를 먼저 선택해주세요');return;}
   // 선택 부분을 표시용 font[size=7]로 감싼 뒤, 그 조각을 바깥 서식 태그 밖으로 꺼내고 안쪽 서식도 풀어 준다
   const ed=rteEl();document.execCommand('styleWithCSS',false,false);document.execCommand('fontSize',false,'7');
-  const BLOCK={DIV:1,P:1,BR:1};const out=[];
+  const BLOCK={DIV:1,P:1,BR:1,UL:1,OL:1,LI:1,HR:1};const out=[];
   ed.querySelectorAll('font[size="7"]').forEach(m=>{
     let p=m.parentNode;
     while(p&&p!==ed&&!BLOCK[p.tagName]){const tail=p.cloneNode(false);while(m.nextSibling)tail.appendChild(m.nextSibling);
