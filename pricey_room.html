@@ -306,6 +306,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;back
       <button class="filter-btn active" onclick="setFilter('all',this)">전체</button>
       <button class="filter-btn" onclick="setFilter('rec',this)">추천</button>
       <button class="filter-btn" onclick="setFilter('life',this)">인생 테마</button>
+      <button class="filter-btn" data-f="mine" onclick="setFilter('mine',this)">내가 쓴 글</button>
     </div>
     <select class="sort-select" id="sort-select" onchange="renderRecords()">
       <option value="reg-desc">등록 최신순</option>
@@ -743,12 +744,13 @@ window.renderRecords=function(){
   else if(currentFilter==='fail')filtered=filtered.filter(r=>r.result==='fail');
   else if(currentFilter==='rec')filtered=filtered.filter(r=>r.rec==='rec');
   else if(currentFilter==='life')filtered=filtered.filter(r=>r.rating==='인생 테마');
+  else if(currentFilter==='mine'){if(me.nick)filtered=filtered.filter(r=>r.nick===me.nick);else{currentFilter='all';document.querySelectorAll('.filter-btn').forEach((b,i)=>b.classList.toggle('active',i===0));}}
   if(q)filtered=filtered.filter(r=>(r.theme||'').toLowerCase().includes(q)||(r.shop||'').toLowerCase().includes(q)||(r.nick||'').toLowerCase().includes(q));
   const sort=document.getElementById('sort-select').value;
   filtered=[...filtered].sort((a,b)=>sort==='reg-desc'?(b.createdAt||0)-(a.createdAt||0):sort==='reg-asc'?(a.createdAt||0)-(b.createdAt||0):sort==='play-desc'?(b.date||'').localeCompare(a.date||''):(a.date||'').localeCompare(b.date||''));
   const list=document.getElementById('records-list');
   if(currentTab==='new'){list.innerHTML='';return;}
-  if(!filtered.length){list.innerHTML=`<div class="empty"><div class="empty-icon">🗝️</div><p>${q?'검색 결과가 없어요':currentFilter==='all'?'아직 기록이 없어요.<br>첫 방탈출 기록을 남겨보세요!':'해당하는 기록이 없어요.'}</p></div>`;return;}
+  if(!filtered.length){list.innerHTML=`<div class="empty"><div class="empty-icon">🗝️</div><p>${q?'검색 결과가 없어요':currentFilter==='all'?'아직 기록이 없어요.<br>첫 방탈출 기록을 남겨보세요!':currentFilter==='mine'?`${esc(me.nick)}님이 쓴 기록이 아직 없어요.`:'해당하는 기록이 없어요.'}</p></div>`;return;}
   list.innerHTML=filtered.map(recordCardHtml).join('');
 }
 function recordCardHtml(r){
@@ -958,7 +960,7 @@ function focusCard(id){
     window.scrollTo({top:card.getBoundingClientRect().top+window.scrollY-off,behavior:'smooth'});
   });
 }
-window.setFilter=function(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderRecords();}
+window.setFilter=async function(f,btn){if(f==='mine'&&!me.nick){if(!(await ensureLogin()))return;}currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderRecords();}
 window.toggleKebab=function(e,id){
   e.stopPropagation();
   document.querySelectorAll('.kebab-menu').forEach(m=>{if(m.id!=='kebab-'+id)m.style.display='none';});
